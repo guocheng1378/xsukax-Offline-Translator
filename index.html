@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>xsukax Offline Translator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Verdana, Geneva, sans-serif; background: #f6f6ef; color: #000; line-height: 1.6; }
+        .container { max-width: 900px; margin: 0 auto; padding: 20px; }
+        .header { background: #ff6600; padding: 8px 12px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
+        .header h1 { font-size: 16px; font-weight: bold; color: #000; }
+        .header-brand { font-size: 11px; color: #000; opacity: 0.8; }
+        .card { background: #fff; border: 1px solid #ccc; padding: 20px; margin-bottom: 16px; }
+        .input-group { margin-bottom: 16px; }
+        .input-group label { display: block; margin-bottom: 6px; font-size: 14px; font-weight: bold; }
+        textarea { width: 100%; padding: 10px; border: 1px solid #ccc; font-family: monospace; font-size: 13px; resize: vertical; min-height: 120px; }
+        select { width: 100%; padding: 8px; border: 1px solid #ccc; background: #fff; font-size: 13px; }
+        .btn { padding: 8px 16px; background: #ff6600; color: #fff; border: none; cursor: pointer; font-size: 13px; font-weight: bold; margin-right: 8px; margin-bottom: 8px; }
+        .btn:hover { background: #ff8533; }
+        .btn:disabled { background: #ccc; cursor: not-allowed; }
+        .btn-secondary { background: #828282; }
+        .btn-secondary:hover { background: #9e9e9e; }
+        .btn-success { background: #4caf50; }
+        .btn-success:hover { background: #5cbf60; }
+        .btn-warning { background: #ff9800; }
+        .btn-warning:hover { background: #ffa726; }
+        .output { background: #f6f6ef; padding: 12px; border: 1px solid #ccc; min-height: 120px; font-family: monospace; font-size: 13px; white-space: pre-wrap; word-wrap: break-word; }
+        .status { padding: 8px; background: #ffffcc; border: 1px solid #ccc; margin-bottom: 16px; font-size: 12px; }
+        .status.success { background: #e8f5e9; }
+        .status.error { background: #ffebee; }
+        .status.hidden { display: none; }
+        .notification { position: fixed; top: 20px; right: 20px; background: #fff; border: 2px solid #ff6600; padding: 12px 16px; max-width: 320px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); z-index: 1000; font-size: 13px; }
+        .notification.success { border-color: #4caf50; }
+        .notification.error { border-color: #f44336; }
+        .notification.hidden { display: none; }
+        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 2000; }
+        .modal.hidden { display: none; }
+        .modal-content { background: #fff; padding: 24px; max-width: 600px; width: 90%; max-height: 80vh; overflow-y: auto; border: 2px solid #000; }
+        .modal-header { font-size: 16px; font-weight: bold; margin-bottom: 16px; }
+        .modal-body { margin-bottom: 16px; font-size: 13px; line-height: 1.8; }
+        .progress-bar { width: 100%; height: 8px; background: #f0f0f0; border: 1px solid #ccc; margin-top: 8px; overflow: hidden; }
+        .progress-fill { height: 100%; background: #ff6600; width: 0%; transition: width 0.3s ease; }
+        .info-text { font-size: 12px; color: #828282; margin-top: 4px; }
+        .model-info { background: #f0f0f0; padding: 8px; margin-top: 8px; font-size: 11px; border-left: 3px solid #ff6600; }
+        .lang-selector-grid { display: grid; grid-template-columns: 1fr auto 1fr; gap: 12px; align-items: end; margin-bottom: 16px; }
+        .swap-btn-container { display: flex; align-items: center; justify-content: center; padding-bottom: 8px; }
+        .swap-btn { padding: 6px 12px; background: #828282; color: #fff; border: none; cursor: pointer; font-size: 12px; font-weight: bold; border-radius: 3px; }
+        .swap-btn:hover { background: #9e9e9e; }
+        .swap-btn:disabled { background: #ccc; cursor: not-allowed; }
+        .offline-controls { background: #fffbf0; border: 1px solid #ffa726; padding: 12px; margin-bottom: 16px; }
+        .offline-controls-title { font-size: 13px; font-weight: bold; margin-bottom: 8px; color: #e65100; }
+        .file-list { background: #f9f9f9; border: 1px solid #ddd; padding: 8px; margin-top: 8px; font-size: 11px; max-height: 150px; overflow-y: auto; }
+        .file-item { padding: 4px; border-bottom: 1px solid #eee; }
+        .file-item:last-child { border-bottom: none; }
+        .spinner-container { display: flex; align-items: center; justify-content: center; padding: 20px; }
+        .spinner { width: 40px; height: 40px; border: 4px solid #f0f0f0; border-top: 4px solid #ff6600; border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .pulse { animation: pulse 1.5s ease-in-out infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        @media (max-width: 640px) { .container { padding: 10px; } .card { padding: 12px; } .header { margin-bottom: 12px; flex-direction: column; align-items: flex-start; } .notification { right: 10px; top: 10px; max-width: calc(100% - 20px); } .lang-selector-grid { grid-template-columns: 1fr; } .swap-btn-container { padding-bottom: 0; margin-bottom: 12px; } }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div>
+            <h1>xsukax Offline Translator</h1>
+            <div class="header-brand">Powered By NLLB-200 Distilled Model</div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div id="statusBar" class="status hidden"></div>
+
+        <div class="card">
+            <div class="offline-controls">
+                <div class="offline-controls-title">📦 Offline Model Management</div>
+                <div style="margin-bottom: 12px; font-size: 12px;">
+                    Download the translation model once (~900MB) and load it from your computer for completely offline translation.
+                </div>
+                <div>
+                    <button id="downloadModelBtn" class="btn btn-warning">Download Model Files</button>
+                    <button id="loadModelBtn" class="btn btn-success">Load Model from Folder</button>
+                </div>
+                <div class="info-text" style="margin-top: 8px;">
+                    <span id="offlineStatus">Status: No model loaded - Click "Download Model Files" to begin</span>
+                </div>
+                <div id="fileList" class="file-list" style="display: none;">
+                    <strong>Model files loaded:</strong>
+                    <div id="fileListContent"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="input-group">
+                <label for="sourceText">Source Text</label>
+                <textarea id="sourceText" placeholder="Enter text to translate...">This application provides offline Artificial Intelligence translation for over 200 languages without needing an internet connection. Translations are fast, accurate, and processed locally to protect user privacy. It integrates easily into web applications, offering reliable multilingual support anywhere.</textarea>
+                <div class="info-text">Enter text in the source language</div>
+            </div>
+
+            <div class="lang-selector-grid">
+                <div class="input-group" style="margin-bottom: 0;">
+                    <label for="sourceLang">From</label>
+                    <select id="sourceLang">
+                        <option value="">Select source language...</option>
+                    </select>
+                </div>
+
+                <div class="swap-btn-container">
+                    <button id="swapBtn" class="swap-btn">⇄ Swap</button>
+                </div>
+
+                <div class="input-group" style="margin-bottom: 0;">
+                    <label for="targetLang">To</label>
+                    <select id="targetLang">
+                        <option value="">Select target language...</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="info-text" style="margin-bottom: 16px;">Supporting 200+ languages across all major scripts (Latin, Arabic, Cyrillic, Devanagari, etc.)</div>
+
+            <div>
+                <button id="translateBtn" class="btn" disabled>Translate</button>
+                <button id="clearBtn" class="btn btn-secondary">Clear</button>
+            </div>
+
+            <div class="model-info" id="modelInfo" style="display: none;">
+                <strong>Model:</strong> <span id="modelName">-</span><br>
+                <strong>Size:</strong> <span id="modelSize">-</span><br>
+                <strong>Source:</strong> <span id="modelSource">-</span><br>
+                <strong>Status:</strong> <span id="modelStatus">Not loaded</span>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="input-group">
+                <label>Translation Output</label>
+                <div id="output" class="output">Translation will appear here...</div>
+                <div class="info-text" id="translationInfo"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="notification" class="notification hidden"></div>
+
+    <div id="modal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header" id="modalTitle">Loading</div>
+            <div class="modal-body" id="modalBody">
+                <div id="modalText">Please wait...</div>
+                <div id="progressBarContainer" class="progress-bar">
+                    <div id="progressFill" class="progress-fill"></div>
+                </div>
+                <div class="info-text" id="progressText" style="margin-top: 8px;">Initializing...</div>
+            </div>
+            <div>
+                <button id="modalCloseBtn" class="btn btn-secondary" style="display: none;">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { pipeline, env } from 'https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.2';
+
+        env.allowLocalModels = true;
+        env.useBrowserCache = true;
+
+        const MODEL_FILES = [
+            'config.json',
+            'generation_config.json',
+            'tokenizer.json',
+            'tokenizer_config.json',
+            'special_tokens_map.json',
+            'onnx/decoder_model_merged_quantized.onnx',
+            'onnx/encoder_model_quantized.onnx'
+        ];
+
+        const MODEL_BASE_URL = 'https://huggingface.co/Xenova/nllb-200-distilled-600M/resolve/main/';
+
+        const LANGUAGE_MAP = {
+            'ace_Arab': 'Acehnese (Arabic)', 'ace_Latn': 'Acehnese (Latin)', 'acm_Arab': 'Mesopotamian Arabic',
+            'acq_Arab': 'Ta\'izzi-Adeni Arabic', 'aeb_Arab': 'Tunisian Arabic', 'afr_Latn': 'Afrikaans',
+            'ajp_Arab': 'South Levantine Arabic', 'aka_Latn': 'Akan', 'amh_Ethi': 'Amharic',
+            'apc_Arab': 'North Levantine Arabic', 'arb_Arab': 'Standard Arabic', 'ars_Arab': 'Najdi Arabic',
+            'ary_Arab': 'Moroccan Arabic', 'arz_Arab': 'Egyptian Arabic', 'asm_Beng': 'Assamese',
+            'ast_Latn': 'Asturian', 'awa_Deva': 'Awadhi', 'ayr_Latn': 'Central Aymara',
+            'azb_Arab': 'South Azerbaijani', 'azj_Latn': 'North Azerbaijani', 'bak_Cyrl': 'Bashkir',
+            'bam_Latn': 'Bambara', 'ban_Latn': 'Balinese', 'bel_Cyrl': 'Belarusian',
+            'bem_Latn': 'Bemba', 'ben_Beng': 'Bengali', 'bho_Deva': 'Bhojpuri',
+            'bjn_Arab': 'Banjar (Arabic)', 'bjn_Latn': 'Banjar (Latin)', 'bod_Tibt': 'Tibetan',
+            'bos_Latn': 'Bosnian', 'bug_Latn': 'Buginese', 'bul_Cyrl': 'Bulgarian',
+            'cat_Latn': 'Catalan', 'ceb_Latn': 'Cebuano', 'ces_Latn': 'Czech',
+            'cjk_Latn': 'Chokwe', 'ckb_Arab': 'Central Kurdish', 'crh_Latn': 'Crimean Tatar',
+            'cym_Latn': 'Welsh', 'dan_Latn': 'Danish', 'deu_Latn': 'German',
+            'dik_Latn': 'Southwestern Dinka', 'dyu_Latn': 'Dyula', 'dzo_Tibt': 'Dzongkha',
+            'ell_Grek': 'Greek', 'eng_Latn': 'English', 'epo_Latn': 'Esperanto',
+            'est_Latn': 'Estonian', 'eus_Latn': 'Basque', 'ewe_Latn': 'Ewe',
+            'fao_Latn': 'Faroese', 'pes_Arab': 'Western Persian', 'fij_Latn': 'Fijian',
+            'fin_Latn': 'Finnish', 'fon_Latn': 'Fon', 'fra_Latn': 'French',
+            'fur_Latn': 'Friulian', 'fuv_Latn': 'Nigerian Fulfulde', 'gla_Latn': 'Scottish Gaelic',
+            'gle_Latn': 'Irish', 'glg_Latn': 'Galician', 'grn_Latn': 'Guarani',
+            'guj_Gujr': 'Gujarati', 'hat_Latn': 'Haitian Creole', 'hau_Latn': 'Hausa',
+            'heb_Hebr': 'Hebrew', 'hin_Deva': 'Hindi', 'hne_Deva': 'Chhattisgarhi',
+            'hrv_Latn': 'Croatian', 'hun_Latn': 'Hungarian', 'hye_Armn': 'Armenian',
+            'ibo_Latn': 'Igbo', 'ilo_Latn': 'Ilocano', 'ind_Latn': 'Indonesian',
+            'isl_Latn': 'Icelandic', 'ita_Latn': 'Italian', 'jav_Latn': 'Javanese',
+            'jpn_Jpan': 'Japanese', 'kab_Latn': 'Kabyle', 'kac_Latn': 'Jingpho',
+            'kam_Latn': 'Kamba', 'kan_Knda': 'Kannada', 'kas_Arab': 'Kashmiri (Arabic)',
+            'kas_Deva': 'Kashmiri (Devanagari)', 'kat_Geor': 'Georgian', 'knc_Arab': 'Central Kanuri (Arabic)',
+            'knc_Latn': 'Central Kanuri (Latin)', 'kaz_Cyrl': 'Kazakh', 'kbp_Latn': 'Kabiyè',
+            'kea_Latn': 'Kabuverdianu', 'khm_Khmr': 'Khmer', 'kik_Latn': 'Kikuyu',
+            'kin_Latn': 'Kinyarwanda', 'kir_Cyrl': 'Kyrgyz', 'kmb_Latn': 'Kimbundu',
+            'kon_Latn': 'Kongo', 'kor_Hang': 'Korean', 'kmr_Latn': 'Northern Kurdish',
+            'lao_Laoo': 'Lao', 'lvs_Latn': 'Latvian', 'lij_Latn': 'Ligurian',
+            'lim_Latn': 'Limburgish', 'lin_Latn': 'Lingala', 'lit_Latn': 'Lithuanian',
+            'lmo_Latn': 'Lombard', 'ltg_Latn': 'Latgalian', 'ltz_Latn': 'Luxembourgish',
+            'lua_Latn': 'Luba-Kasai', 'lug_Latn': 'Ganda', 'luo_Latn': 'Luo',
+            'lus_Latn': 'Mizo', 'mag_Deva': 'Magahi', 'mai_Deva': 'Maithili',
+            'mal_Mlym': 'Malayalam', 'mar_Deva': 'Marathi', 'min_Latn': 'Minangkabau',
+            'mkd_Cyrl': 'Macedonian', 'plt_Latn': 'Plateau Malagasy', 'mlt_Latn': 'Maltese',
+            'mni_Beng': 'Meitei', 'khk_Cyrl': 'Mongolian', 'mos_Latn': 'Mossi',
+            'mri_Latn': 'Maori', 'zsm_Latn': 'Malay', 'mya_Mymr': 'Burmese',
+            'nld_Latn': 'Dutch', 'nno_Latn': 'Norwegian Nynorsk', 'nob_Latn': 'Norwegian Bokmål',
+            'npi_Deva': 'Nepali', 'nso_Latn': 'Northern Sotho', 'nus_Latn': 'Nuer',
+            'nya_Latn': 'Nyanja', 'oci_Latn': 'Occitan', 'gaz_Latn': 'West Central Oromo',
+            'ory_Orya': 'Odia', 'pag_Latn': 'Pangasinan', 'pan_Guru': 'Punjabi',
+            'pap_Latn': 'Papiamento', 'pol_Latn': 'Polish', 'por_Latn': 'Portuguese',
+            'prs_Arab': 'Dari', 'pbt_Arab': 'Southern Pashto', 'quy_Latn': 'Ayacucho Quechua',
+            'ron_Latn': 'Romanian', 'run_Latn': 'Rundi', 'rus_Cyrl': 'Russian',
+            'sag_Latn': 'Sango', 'san_Deva': 'Sanskrit', 'sat_Beng': 'Santali',
+            'scn_Latn': 'Sicilian', 'shn_Mymr': 'Shan', 'sin_Sinh': 'Sinhala',
+            'slk_Latn': 'Slovak', 'slv_Latn': 'Slovenian', 'smo_Latn': 'Samoan',
+            'sna_Latn': 'Shona', 'snd_Arab': 'Sindhi', 'som_Latn': 'Somali',
+            'sot_Latn': 'Southern Sotho', 'spa_Latn': 'Spanish', 'als_Latn': 'Albanian',
+            'srd_Latn': 'Sardinian', 'srp_Cyrl': 'Serbian', 'ssw_Latn': 'Swati',
+            'sun_Latn': 'Sundanese', 'swe_Latn': 'Swedish', 'swh_Latn': 'Swahili',
+            'szl_Latn': 'Silesian', 'tam_Taml': 'Tamil', 'tat_Cyrl': 'Tatar',
+            'tel_Telu': 'Telugu', 'tgk_Cyrl': 'Tajik', 'tgl_Latn': 'Tagalog',
+            'tha_Thai': 'Thai', 'tir_Ethi': 'Tigrinya', 'taq_Latn': 'Tamasheq (Latin)',
+            'taq_Tfng': 'Tamasheq (Tifinagh)', 'tpi_Latn': 'Tok Pisin', 'tsn_Latn': 'Tswana',
+            'tso_Latn': 'Tsonga', 'tuk_Latn': 'Turkmen', 'tum_Latn': 'Tumbuka',
+            'tur_Latn': 'Turkish', 'twi_Latn': 'Twi', 'tzm_Tfng': 'Central Atlas Tamazight',
+            'uig_Arab': 'Uyghur', 'ukr_Cyrl': 'Ukrainian', 'umb_Latn': 'Umbundu',
+            'urd_Arab': 'Urdu', 'uzn_Latn': 'Uzbek', 'vec_Latn': 'Venetian',
+            'vie_Latn': 'Vietnamese', 'war_Latn': 'Waray', 'wol_Latn': 'Wolof',
+            'xho_Latn': 'Xhosa', 'ydd_Hebr': 'Yiddish', 'yor_Latn': 'Yoruba',
+            'yue_Hant': 'Cantonese', 'zho_Hans': 'Chinese (Simplified)', 'zho_Hant': 'Chinese (Traditional)',
+            'zul_Latn': 'Zulu'
+        };
+
+        // Helper function to yield control back to browser
+        const yieldToBrowser = () => new Promise(resolve => {
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                    setTimeout(resolve, 0);
+                });
+            });
+        });
+
+        class OfflineTranslationEngine {
+            constructor() {
+                this.translator = null;
+                this.isInitialized = false;
+                this.localModelPath = null;
+            }
+
+            async downloadModelFiles() {
+                try {
+                    if (!('showDirectoryPicker' in window)) {
+                        throw new Error('File System Access API not supported. Use Chrome, Edge, or Opera browser.');
+                    }
+
+                    showModal('Download Model Files', 'Select an empty folder to save model files...');
+                    
+                    const dirHandle = await window.showDirectoryPicker({ mode: 'readwrite' });
+                    updateProgress(5, 'Starting download...');
+
+                    let completedFiles = 0;
+                    const totalFiles = MODEL_FILES.length;
+
+                    for (const fileName of MODEL_FILES) {
+                        try {
+                            const percentBase = Math.floor((completedFiles / totalFiles) * 90);
+                            updateProgress(5 + percentBase, `Downloading ${fileName}... (${completedFiles + 1}/${totalFiles})`);
+
+                            const response = await fetch(MODEL_BASE_URL + fileName);
+                            if (!response.ok) throw new Error(`Failed to download ${fileName}`);
+
+                            const blob = await response.blob();
+                            const pathParts = fileName.split('/');
+                            let currentDir = dirHandle;
+                            
+                            for (let i = 0; i < pathParts.length - 1; i++) {
+                                currentDir = await currentDir.getDirectoryHandle(pathParts[i], { create: true });
+                            }
+
+                            const fileHandle = await currentDir.getFileHandle(pathParts[pathParts.length - 1], { create: true });
+                            const writable = await fileHandle.createWritable();
+                            await writable.write(blob);
+                            await writable.close();
+
+                            completedFiles++;
+                            await yieldToBrowser();
+                        } catch (error) {
+                            throw new Error(`Failed to download ${fileName}: ${error.message}`);
+                        }
+                    }
+
+                    updateProgress(100, 'Download complete!');
+                    
+                    setTimeout(() => {
+                        hideModal();
+                        showNotification('Model files downloaded! Now click "Load Model from Folder" to use them.', 'success');
+                    }, 1000);
+
+                } catch (error) {
+                    console.error('Download error:', error);
+                    updateModalError(`Download failed: ${error.message}`);
+                }
+            }
+
+            async loadFromLocalFolder() {
+                try {
+                    if (!('showDirectoryPicker' in window)) {
+                        throw new Error('File System Access API not supported. Use Chrome, Edge, or Opera browser.');
+                    }
+
+                    showModal('Load Model', 'Select folder containing model files...');
+
+                    const dirHandle = await window.showDirectoryPicker({ mode: 'read' });
+                    updateProgress(5, 'Verifying files...');
+
+                    await yieldToBrowser();
+
+                    const missingFiles = [];
+                    for (const fileName of MODEL_FILES) {
+                        const pathParts = fileName.split('/');
+                        let currentDir = dirHandle;
+                        
+                        try {
+                            for (let i = 0; i < pathParts.length - 1; i++) {
+                                currentDir = await currentDir.getDirectoryHandle(pathParts[i]);
+                            }
+                            await currentDir.getFileHandle(pathParts[pathParts.length - 1]);
+                        } catch {
+                            missingFiles.push(fileName);
+                        }
+                    }
+
+                    if (missingFiles.length > 0) {
+                        throw new Error(`Missing files: ${missingFiles.join(', ')}`);
+                    }
+
+                    updateProgress(15, 'All files verified successfully');
+                    await yieldToBrowser();
+                    
+                    updateProgress(20, 'Loading model into memory...');
+                    await yieldToBrowser();
+                    
+                    await this.initializeFromLocal(dirHandle);
+
+                    document.getElementById('offlineStatus').textContent = 'Status: ✅ Offline model loaded and ready';
+                    document.getElementById('modelSource').textContent = 'Local Folder (Offline)';
+                    updateFileList(MODEL_FILES);
+
+                    setTimeout(() => {
+                        hideModal();
+                        showNotification('Offline model loaded successfully!', 'success');
+                        updateButtonStates();
+                    }, 500);
+
+                } catch (error) {
+                    console.error('Load error:', error);
+                    updateModalError(`Failed to load: ${error.message}`);
+                }
+            }
+
+            async initializeFromLocal(dirHandle) {
+                this.localModelPath = dirHandle;
+                
+                let lastProgress = 20;
+                
+                const progressCallback = (progress) => {
+                    if (progress.status === 'progress' && progress.progress !== undefined) {
+                        const percent = Math.min(95, 20 + Math.floor(progress.progress * 75));
+                        if (percent > lastProgress) {
+                            lastProgress = percent;
+                            updateProgress(percent, `Loading model: ${Math.floor(progress.progress * 100)}%`);
+                        }
+                    } else if (progress.status === 'done') {
+                        updateProgress(98, 'Finalizing...');
+                    }
+                };
+
+                this.translator = await pipeline(
+                    'translation',
+                    'Xenova/nllb-200-distilled-600M',
+                    { 
+                        progress_callback: progressCallback,
+                        quantized: true
+                    }
+                );
+
+                this.isInitialized = true;
+                updateProgress(100, 'Model loaded successfully!');
+                updateModelInfo('NLLB-200 Distilled (600M)', '~900MB', 'Local Folder', 'Loaded & Ready');
+            }
+
+            async translate(text, srcLang, tgtLang) {
+                if (!this.isInitialized) {
+                    throw new Error('Model not loaded. Please load model from folder first.');
+                }
+
+                if (srcLang === tgtLang) {
+                    throw new Error('Source and target languages must be different');
+                }
+
+                try {
+                    showTranslationModal();
+                    
+                    // Multiple yields to keep browser responsive
+                    await yieldToBrowser();
+                    await yieldToBrowser();
+                    await yieldToBrowser();
+
+                    const result = await this.translator(text, {
+                        src_lang: srcLang,
+                        tgt_lang: tgtLang,
+                        max_length: 512
+                    });
+
+                    return result[0].translation_text;
+                } catch (error) {
+                    throw new Error(`Translation failed: ${error.message}`);
+                }
+            }
+
+            getLanguageName(code) {
+                return LANGUAGE_MAP[code] || code;
+            }
+        }
+
+        function showNotification(message, type = 'info') {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.className = `notification ${type}`;
+            setTimeout(() => notification.className = 'notification hidden', 5000);
+        }
+
+        function showModal(title, body, showClose = false) {
+            document.getElementById('modalTitle').textContent = title;
+            document.getElementById('modalText').textContent = body;
+            document.getElementById('modalCloseBtn').style.display = showClose ? 'inline-block' : 'none';
+            document.getElementById('progressFill').style.width = '0%';
+            document.getElementById('progressText').textContent = 'Initializing...';
+            document.getElementById('progressBarContainer').style.display = 'block';
+            document.getElementById('modal').classList.remove('hidden');
+        }
+
+        function showTranslationModal() {
+            const modal = document.getElementById('modal');
+            const modalTitle = document.getElementById('modalTitle');
+            const modalBody = document.getElementById('modalBody');
+            
+            modalTitle.textContent = 'Translating';
+            modalBody.innerHTML = `
+                <div class="spinner-container">
+                    <div class="spinner"></div>
+                </div>
+                <div class="pulse" style="text-align: center; font-size: 13px; color: #666;">
+                    Processing your translation, please wait...
+                </div>
+            `;
+            document.getElementById('modalCloseBtn').style.display = 'none';
+            modal.classList.remove('hidden');
+        }
+
+        function hideModal() {
+            document.getElementById('modal').classList.add('hidden');
+        }
+
+        function updateProgress(percent, text) {
+            const progressFill = document.getElementById('progressFill');
+            const progressText = document.getElementById('progressText');
+            const cappedPercent = Math.min(100, Math.max(0, percent));
+            if (progressFill) progressFill.style.width = `${cappedPercent}%`;
+            if (progressText) progressText.textContent = text;
+        }
+
+        function updateModalError(message) {
+            document.getElementById('modalText').innerHTML = `
+                <div style="color: #f44336; margin-bottom: 12px;">${message}</div>
+                <div style="font-size: 12px;">Make sure all model files are in the selected folder.</div>
+            `;
+            document.getElementById('modalCloseBtn').style.display = 'inline-block';
+            document.getElementById('progressBarContainer').style.display = 'none';
+        }
+
+        function showStatus(message, type = 'info') {
+            const statusBar = document.getElementById('statusBar');
+            statusBar.textContent = message;
+            statusBar.className = `status ${type}`;
+        }
+
+        function hideStatus() {
+            document.getElementById('statusBar').className = 'status hidden';
+        }
+
+        function updateModelInfo(name, size, source, status) {
+            document.getElementById('modelName').textContent = name;
+            document.getElementById('modelSize').textContent = size;
+            document.getElementById('modelSource').textContent = source;
+            document.getElementById('modelStatus').textContent = status;
+            document.getElementById('modelInfo').style.display = 'block';
+        }
+
+        function updateFileList(files) {
+            const fileListContent = document.getElementById('fileListContent');
+            fileListContent.innerHTML = files.map(f => `<div class="file-item">✓ ${f}</div>`).join('');
+            document.getElementById('fileList').style.display = 'block';
+        }
+
+        function updateButtonStates() {
+            const hasText = document.getElementById('sourceText').value.trim().length > 0;
+            const sourceLang = document.getElementById('sourceLang').value;
+            const targetLang = document.getElementById('targetLang').value;
+            const hasLangs = sourceLang && targetLang;
+            const langsAreDifferent = sourceLang !== targetLang;
+            
+            document.getElementById('translateBtn').disabled = !(
+                hasText && hasLangs && langsAreDifferent && engine.isInitialized
+            );
+            document.getElementById('swapBtn').disabled = !hasLangs;
+        }
+
+        function populateLanguageSelectors() {
+            const sourceLang = document.getElementById('sourceLang');
+            const targetLang = document.getElementById('targetLang');
+            
+            const sortedLanguages = Object.entries(LANGUAGE_MAP).sort((a, b) => a[1].localeCompare(b[1]));
+            
+            sortedLanguages.forEach(([code, name]) => {
+                const sourceOpt = document.createElement('option');
+                sourceOpt.value = code;
+                sourceOpt.textContent = name;
+                if (code === 'eng_Latn') sourceOpt.selected = true;
+                sourceLang.appendChild(sourceOpt);
+                
+                const targetOpt = document.createElement('option');
+                targetOpt.value = code;
+                targetOpt.textContent = name;
+                if (code === 'spa_Latn') targetOpt.selected = true;
+                targetLang.appendChild(targetOpt);
+            });
+        }
+
+        const engine = new OfflineTranslationEngine();
+        let translationStartTime = 0;
+
+        document.getElementById('downloadModelBtn').addEventListener('click', () => {
+            engine.downloadModelFiles();
+        });
+
+        document.getElementById('loadModelBtn').addEventListener('click', () => {
+            engine.loadFromLocalFolder();
+        });
+
+        document.getElementById('translateBtn').addEventListener('click', async () => {
+            const sourceText = document.getElementById('sourceText').value.trim();
+            const sourceLang = document.getElementById('sourceLang').value;
+            const targetLang = document.getElementById('targetLang').value;
+
+            if (!sourceText || !sourceLang || !targetLang) {
+                showNotification('Please fill all fields', 'error');
+                return;
+            }
+
+            if (sourceLang === targetLang) {
+                showNotification('Source and target must be different', 'error');
+                return;
+            }
+
+            try {
+                document.getElementById('translateBtn').disabled = true;
+                const sourceName = engine.getLanguageName(sourceLang);
+                const targetName = engine.getLanguageName(targetLang);
+                
+                translationStartTime = performance.now();
+                const result = await engine.translate(sourceText, sourceLang, targetLang);
+                const elapsed = Math.round(performance.now() - translationStartTime);
+
+                hideModal();
+                
+                document.getElementById('output').textContent = result;
+                document.getElementById('translationInfo').textContent = 
+                    `${sourceName} → ${targetName} | ${(elapsed / 1000).toFixed(2)}s`;
+                
+                showNotification('Translation complete!', 'success');
+            } catch (error) {
+                console.error('Translation error:', error);
+                hideModal();
+                showStatus(`Error: ${error.message}`, 'error');
+                showNotification(`Error: ${error.message}`, 'error');
+            } finally {
+                updateButtonStates();
+            }
+        });
+
+        document.getElementById('clearBtn').addEventListener('click', () => {
+            document.getElementById('sourceText').value = '';
+            document.getElementById('output').textContent = 'Translation will appear here...';
+            document.getElementById('translationInfo').textContent = '';
+            hideStatus();
+            updateButtonStates();
+        });
+
+        document.getElementById('swapBtn').addEventListener('click', () => {
+            const sourceLang = document.getElementById('sourceLang').value;
+            const targetLang = document.getElementById('targetLang').value;
+            
+            if (!sourceLang || !targetLang) {
+                showNotification('Select both languages first', 'error');
+                return;
+            }
+            
+            document.getElementById('sourceLang').value = targetLang;
+            document.getElementById('targetLang').value = sourceLang;
+            
+            const sourceText = document.getElementById('sourceText').value;
+            const outputText = document.getElementById('output').textContent;
+            
+            if (outputText && outputText !== 'Translation will appear here...') {
+                document.getElementById('sourceText').value = outputText;
+                document.getElementById('output').textContent = sourceText;
+            }
+            
+            showNotification('Languages swapped', 'success');
+            updateButtonStates();
+        });
+
+        document.getElementById('modalCloseBtn').addEventListener('click', hideModal);
+
+        document.getElementById('sourceText').addEventListener('input', updateButtonStates);
+        document.getElementById('sourceLang').addEventListener('change', updateButtonStates);
+        document.getElementById('targetLang').addEventListener('change', updateButtonStates);
+
+        document.addEventListener('keydown', (e) => {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                e.preventDefault();
+                if (!document.getElementById('translateBtn').disabled) {
+                    document.getElementById('translateBtn').click();
+                }
+            }
+        });
+
+        window.addEventListener('DOMContentLoaded', () => {
+            populateLanguageSelectors();
+            showNotification('xsukax Offline Translator ready! Download model to begin.', 'success');
+            updateButtonStates();
+        });
+    </script>
+</body>
+</html>

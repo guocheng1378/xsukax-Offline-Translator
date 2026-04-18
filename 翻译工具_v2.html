@@ -1106,75 +1106,113 @@ document.getElementById('btn-load').addEventListener('click', () => {
 // 核心：从本地ArrayBuffer加载Transformers.js模型
 // =====================================================
 async function loadLocalModel() {
-    if (!translator) {
-        // 加载Transformers.js库
-        const { pipeline, env, FilesFromBrowser } = await import('https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.1');
-        
-        // 准备本地文件Blob URL
-        const localFiles = {};
-        const requiredFiles = ['tokenizer_config.json', 'tokenizer.json', 'encoder_model.onnx', 'decoder_model.onnx'];
-        
-        for (const fn of requiredFiles) {
-            if (!uploadedFiles[fn]) {
-                throw new Error(`缺少文件: ${fn}，请先上传`);
-            }
-            // Blob URL方式：让Transformers.js以为这是网络上的文件
-            const blob = new Blob([uploadedFiles[fn]]);
-            const url = URL.createObjectURL(blob);
-            localFiles[fn] = url;
+    if (translator) return; // 已有translator直接返回
+
+    const statusDot = document.getElementById('statusDot');
+    const modelStatus = document.getElementById('modelStatus');
+    const progressFill = document.getElementById('progressFill');
+
+    statusDot.className = 'status-dot loading';
+    modelStatus.textContent = '正在准备本地模型加载...';
+    progressFill.style.width = '5%';
+
+    // 验证所有文件都存在
+    const requiredFiles = ['tokenizer_config.json', 'tokenizer.json', 'encoder_model.onnx', 'decoder_model.onnx'];
+    for (const fn of requiredFiles) {
+        if (!uploadedFiles[fn]) {
+            throw new Error(`缺少文件: ${fn}，请先上传`);
         }
-        
-        // 自定义URL处理器：拦截模型文件请求，返回本地Blob URL
-        const originalFetch = env.fetch;
-        env.fetch = async (url, ...args) => {
-            const urlStr = String(url);
-            for (const [fn, blobUrl] of Object.entries(localFiles)) {
-                // Xenova transformers 内部会请求这些文件名
-                if (urlStr.includes(fn)) {
-                    const blob = new Blob([uploadedFiles[fn]]);
-                    const myUrl = URL.createObjectURL(blob);
-                    // 用自定义response返回
-                    const response = new Response(blob, {
-                        status: 200,
-                        headers: { 'Content-Type': 'application/octet-stream' }
-                    });
-                    return response;
-                }
+    }
+
+    // 加载Transformers.js库
+    const { pipeline, env } = await import('https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.1');
+
+    // 构建本地文件映射: Blob URL -> ArrayBuffer
+    const localBlobs = {};
+    for (const fn of requiredFiles) {
+        localBlobs[fn] = new Blob([uploadedFiles[fn]]);
+    }
+
+    // 获取原始fetch（用于加载transformers.js自身的WASM等）
+    const originalFetch = window.fetch.bind(window);
+
+    // 拦截所有HuggingFace相关请求
+    env.useBrowserCache = false;
+
+    env.fetch = async (url, options) => {
+        const urlStr = typeof url === 'string' ? url : url.url || String(url);
+
+        // 1. 拦截 HuggingFace API 请求（获取模型文件列表）
+        if (urlStr.includes('huggingface.co/api/models') && urlStr.includes('Xenova/nllb-200-distilled-600M')) {
+            // 返回伪造的模型文件列表，让transformers.js知道要下载哪些文件
+            const fileList = requiredFiles.map(fn => ({
+                rfilename: fn,
+                size: uploadedFiles[fn].byteLength
+            }));
+            const fakeApiResponse = {
+                modelId: 'Xenova/nllb-200-distilled-600M',
+                siblings: fileList.map(f => ({
+                    rfilename: f.rfilename,
+                    size: f.size
+                }))
+            };
+            return new Response(JSON.stringify(fakeApiResponse), {
+                status: 200,
+                headers: { 'Content-Type': 'application/json' }
+            });
+        }
+
+        // 2. 拦截 HuggingFace CDN 上的模型文件下载请求
+        if ((urlStr.includes('huggingface.co') || urlStr.includes('cdn-lfs.huggingface.co')) &&
+            requiredFiles.some(fn => urlStr.includes(fn))) {
+            // 找到匹配的文件名
+            const matchedFile = requiredFiles.find(fn => urlStr.includes(fn));
+            if (matchedFile && localBlobs[matchedFile]) {
+                const contentType = matchedFile.endsWith('.json')
+                    ? 'application/json'
+                    : 'application/octet-stream';
+                return new Response(localBlobs[matchedFile], {
+                    status: 200,
+                    headers: {
+                        'Content-Type': contentType,
+                        'Content-Length': uploadedFiles[matchedFile].byteLength
+                    }
+                });
             }
-            return originalFetch(url, ...args);
-        };
-        
-        env.allowLocalModels = true;
-        env.useBrowserCache = false;
-        
-        const statusDot = document.getElementById('statusDot');
-        const modelStatus = document.getElementById('modelStatus');
-        const progressFill = document.getElementById('progressFill');
-        
-        statusDot.className = 'status-dot loading';
-        modelStatus.textContent = '正在加载模型（约需1-2分钟）...';
-        progressFill.style.width = '5%';
-        
-        // 加载翻译pipeline
+        }
+
+        // 3. 其他请求走原始fetch（transformers.js自身的WASM加载等）
+        return originalFetch(url, options);
+    };
+
+    modelStatus.textContent = '正在加载模型（约需1-2分钟）...';
+    progressFill.style.width = '10%';
+
+    // 加载翻译pipeline
+    try {
         translator = await pipeline('translation', 'Xenova/nllb-200-distilled-600M', {
             progress_callback: (p) => {
                 if (p.status === 'progress') {
                     const pct = Math.round(p.progress);
-                    progressFill.style.width = `${pct}%`;
+                    progressFill.style.width = `${Math.max(10, pct)}%`;
                     modelStatus.textContent = `加载中: ${pct}%`;
                 } else if (p.status === 'initiate') {
-                    modelStatus.textContent = '正在初始化模型...';
+                    modelStatus.textContent = '正在初始化...';
                 } else if (p.status === 'loading') {
                     modelStatus.textContent = '正在加载模型文件...';
                 }
             }
         });
-        
+
         modelReady = true;
         statusDot.className = 'status-dot loaded';
         modelStatus.textContent = '模型已就绪！可以离线翻译了';
         progressFill.style.width = '100%';
         showToast('🎉 离线模型加载成功！');
+    } catch (err) {
+        statusDot.className = 'status-dot';
+        modelStatus.textContent = '模型加载失败';
+        throw err;
     }
 }
 

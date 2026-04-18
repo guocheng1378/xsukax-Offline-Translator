@@ -1103,18 +1103,18 @@ document.getElementById('btn-load').addEventListener('click', () => {
 });
 
 // =====================================================
-// 核心：从本地ArrayBuffer加载Transformers.js模型
+// 核心：从本地ArrayBuffer加载Transformers.js模型（v4版本）
 // =====================================================
 async function loadLocalModel() {
-    if (translator) return; // 已有translator直接返回
+    if (translator) return; // 已加载直接返回
 
     const statusDot = document.getElementById('statusDot');
     const modelStatus = document.getElementById('modelStatus');
     const progressFill = document.getElementById('progressFill');
 
     statusDot.className = 'status-dot loading';
-    modelStatus.textContent = '正在准备本地模型加载...';
-    progressFill.style.width = '5%';
+    modelStatus.textContent = '正在准备模型加载...';
+    progressFill.style.width = '2%';
 
     // 验证所有文件都存在
     const requiredFiles = ['tokenizer_config.json', 'tokenizer.json', 'encoder_model.onnx', 'decoder_model.onnx'];
@@ -1124,82 +1124,99 @@ async function loadLocalModel() {
         }
     }
 
-    // 加载Transformers.js库
-    const { pipeline, env } = await import('https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.1');
+    // 加载Transformers.js v4（最新版，支持更好的本地加载）
+    const { pipeline, env, Fileset } = await import('https://cdn.jsdelivr.net/npm/@huggingface/transformers@4');
 
-    // 构建本地文件映射: Blob URL -> ArrayBuffer
+    // 构建本地文件映射
     const localBlobs = {};
     for (const fn of requiredFiles) {
-        localBlobs[fn] = new Blob([uploadedFiles[fn]]);
+        localBlobs[fn] = new Blob([uploadedFiles[fn]], {
+            type: fn.endsWith('.json') ? 'application/json' : 'application/octet-stream'
+        });
     }
 
-    // 获取原始fetch（用于加载transformers.js自身的WASM等）
+    // 创建一个模拟的Fileset：使用一个永远不会真正被fetch的假URL
+    // Transformers.js会先调用Fileset的getFileURL获取每个文件URL
+    const fakeBaseUrl = 'http://local-nllb-model/';
+    
+    // 创建自定义Fileset类（继承官方Fileset，覆盖getFileURL）
+    class LocalFileset extends Fileset {
+        constructor() {
+            super(fakeBaseUrl);
+        }
+        async getFileURL(filename) {
+            if (localBlobs[filename]) {
+                // 返回blob URL
+                return URL.createObjectURL(localBlobs[filename]);
+            }
+            // 对于不存在的文件，返回blob URL（会失败但不会阻断流程）
+            console.warn('文件不存在:', filename);
+            return fakeBaseUrl + filename;
+        }
+    }
+
+    // 拦截所有外部网络请求（仅允许CDN加载transformers.js自身）
     const originalFetch = window.fetch.bind(window);
+    window.fetch = async (url, options) => {
+        const urlStr = typeof url === 'string' ? url : (url instanceof Request ? url.url : String(url));
 
-    // 拦截所有HuggingFace相关请求
-    env.useBrowserCache = false;
+        // 允许加载 transformers.js CDN 文件（WASM等）
+        if (urlStr.includes('cdn.jsdelivr.net') || urlStr.includes('cdn-lfs.huggingface.co')) {
+            return originalFetch(url, options);
+        }
 
-    env.fetch = async (url, options) => {
-        const urlStr = typeof url === 'string' ? url : url.url || String(url);
-
-        // 1. 拦截 HuggingFace API 请求（获取模型文件列表）
-        if (urlStr.includes('huggingface.co/api/models') && urlStr.includes('Xenova/nllb-200-distilled-600M')) {
-            // 返回伪造的模型文件列表，让transformers.js知道要下载哪些文件
+        // 拦截 HuggingFace API 请求（模型文件列表）
+        if (urlStr.includes('huggingface.co/api/models') && urlStr.includes('nllb')) {
             const fileList = requiredFiles.map(fn => ({
                 rfilename: fn,
                 size: uploadedFiles[fn].byteLength
             }));
-            const fakeApiResponse = {
+            return new Response(JSON.stringify({
                 modelId: 'Xenova/nllb-200-distilled-600M',
-                siblings: fileList.map(f => ({
-                    rfilename: f.rfilename,
-                    size: f.size
-                }))
-            };
-            return new Response(JSON.stringify(fakeApiResponse), {
+                siblings: fileList.map(f => ({ rfilename: f.rfilename, size: f.size }))
+            }), {
                 status: 200,
                 headers: { 'Content-Type': 'application/json' }
             });
         }
 
-        // 2. 拦截 HuggingFace CDN 上的模型文件下载请求
-        if ((urlStr.includes('huggingface.co') || urlStr.includes('cdn-lfs.huggingface.co')) &&
-            requiredFiles.some(fn => urlStr.includes(fn))) {
-            // 找到匹配的文件名
-            const matchedFile = requiredFiles.find(fn => urlStr.includes(fn));
-            if (matchedFile && localBlobs[matchedFile]) {
-                const contentType = matchedFile.endsWith('.json')
-                    ? 'application/json'
-                    : 'application/octet-stream';
-                return new Response(localBlobs[matchedFile], {
-                    status: 200,
-                    headers: {
-                        'Content-Type': contentType,
-                        'Content-Length': uploadedFiles[matchedFile].byteLength
-                    }
-                });
+        // 拦截 HuggingFace CDN 文件请求
+        if ((urlStr.includes('huggingface.co') || urlStr.includes('cdn-lfs.huggingface.co'))) {
+            for (const fn of requiredFiles) {
+                if (urlStr.includes(fn) && localBlobs[fn]) {
+                    return new Response(localBlobs[fn], {
+                        status: 200,
+                        headers: {
+                            'Content-Type': fn.endsWith('.json') ? 'application/json' : 'application/octet-stream',
+                            'Content-Length': uploadedFiles[fn].byteLength
+                        }
+                    });
+                }
             }
         }
 
-        // 3. 其他请求走原始fetch（transformers.js自身的WASM加载等）
-        return originalFetch(url, options);
+        // 其他请求返回404（transformers.js内部会用到的config.json等通过LocalFileset获取）
+        return new Response(null, { status: 404 });
     };
 
     modelStatus.textContent = '正在加载模型（约需1-2分钟）...';
-    progressFill.style.width = '10%';
+    progressFill.style.width = '5%';
 
-    // 加载翻译pipeline
     try {
-        translator = await pipeline('translation', 'Xenova/nllb-200-distilled-600M', {
+        // 使用自定义Fileset加载模型
+        const localFileset = new LocalFileset();
+        translator = await pipeline('translation', localFileset, {
             progress_callback: (p) => {
                 if (p.status === 'progress') {
                     const pct = Math.round(p.progress);
-                    progressFill.style.width = `${Math.max(10, pct)}%`;
+                    progressFill.style.width = `${Math.max(5, pct)}%`;
                     modelStatus.textContent = `加载中: ${pct}%`;
                 } else if (p.status === 'initiate') {
                     modelStatus.textContent = '正在初始化...';
                 } else if (p.status === 'loading') {
-                    modelStatus.textContent = '正在加载模型文件...';
+                    modelStatus.textContent = '正在加载模型...';
+                } else {
+                    modelStatus.textContent = '处理中...';
                 }
             }
         });
@@ -1212,6 +1229,8 @@ async function loadLocalModel() {
     } catch (err) {
         statusDot.className = 'status-dot';
         modelStatus.textContent = '模型加载失败';
+        // 恢复原始fetch
+        window.fetch = originalFetch;
         throw err;
     }
 }

@@ -1103,7 +1103,7 @@ document.getElementById('btn-load').addEventListener('click', () => {
 });
 
 // =====================================================
-// 核心：从本地ArrayBuffer加载Transformers.js模型（v4版本）
+// 核心：从本地ArrayBuffer加载Transformers.js模型（本地库+v4版本）
 // =====================================================
 async function loadLocalModel() {
     if (translator) return; // 已加载直接返回
@@ -1124,9 +1124,6 @@ async function loadLocalModel() {
         }
     }
 
-    // 加载Transformers.js v4（最新版，支持更好的本地加载）
-    const { pipeline, env, Fileset } = await import('https://cdn.jsdelivr.net/npm/@huggingface/transformers@4');
-
     // 构建本地文件映射
     const localBlobs = {};
     for (const fn of requiredFiles) {
@@ -1135,27 +1132,7 @@ async function loadLocalModel() {
         });
     }
 
-    // 创建一个模拟的Fileset：使用一个永远不会真正被fetch的假URL
-    // Transformers.js会先调用Fileset的getFileURL获取每个文件URL
-    const fakeBaseUrl = 'http://local-nllb-model/';
-    
-    // 创建自定义Fileset类（继承官方Fileset，覆盖getFileURL）
-    class LocalFileset extends Fileset {
-        constructor() {
-            super(fakeBaseUrl);
-        }
-        async getFileURL(filename) {
-            if (localBlobs[filename]) {
-                // 返回blob URL
-                return URL.createObjectURL(localBlobs[filename]);
-            }
-            // 对于不存在的文件，返回blob URL（会失败但不会阻断流程）
-            console.warn('文件不存在:', filename);
-            return fakeBaseUrl + filename;
-        }
-    }
-
-    // 拦截所有外部网络请求（仅允许CDN加载transformers.js自身）
+    // 拦截所有外部网络请求（仅允许CDN加载WASM等）
     const originalFetch = window.fetch.bind(window);
     window.fetch = async (url, options) => {
         const urlStr = typeof url === 'string' ? url : (url instanceof Request ? url.url : String(url));
@@ -1195,7 +1172,7 @@ async function loadLocalModel() {
             }
         }
 
-        // 其他请求返回404（transformers.js内部会用到的config.json等通过LocalFileset获取）
+        // 其他请求返回404
         return new Response(null, { status: 404 });
     };
 
@@ -1203,7 +1180,23 @@ async function loadLocalModel() {
     progressFill.style.width = '5%';
 
     try {
-        // 使用自定义Fileset加载模型
+        // 动态导入本地transformers.js（从GitHub Pages加载）
+        const { pipeline, Fileset } = await import('./transformers.min.js');
+
+        // 创建本地Fileset
+        class LocalFileset extends Fileset {
+            constructor() {
+                super('http://local-nllb/');
+            }
+            async getFileURL(filename) {
+                if (localBlobs[filename]) {
+                    return URL.createObjectURL(localBlobs[filename]);
+                }
+                console.warn('文件不存在:', filename);
+                return 'http://local-nllb/' + filename;
+            }
+        }
+
         const localFileset = new LocalFileset();
         translator = await pipeline('translation', localFileset, {
             progress_callback: (p) => {
@@ -1229,7 +1222,6 @@ async function loadLocalModel() {
     } catch (err) {
         statusDot.className = 'status-dot';
         modelStatus.textContent = '模型加载失败';
-        // 恢复原始fetch
         window.fetch = originalFetch;
         throw err;
     }

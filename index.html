@@ -3,936 +3,850 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>老挝语翻译</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>老挝语↔中文 翻译器</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; background: #f5f5f5; color: #333; line-height: 1.6; }
-        .container { max-width: 900px; margin: 0 auto; padding: 20px; }
-        .header { background: linear-gradient(135deg, #1AAD19 0%, #129611 100%); padding: 12px 16px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 8px rgba(26,173,25,0.3); }
-        .header h1 { font-size: 18px; font-weight: bold; color: #fff; }
-        .header-brand { font-size: 12px; color: rgba(255,255,255,0.85); }
-        .card { background: #fff; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); padding: 20px; margin-bottom: 16px; }
-        .input-group { margin-bottom: 16px; }
-        .input-group label { display: flex; align-items: center; gap: 6px; margin-bottom: 6px; font-size: 14px; font-weight: 600; color: #333; }
-        textarea { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 6px; font-family: "PingFang SC", "Microsoft YaHei", sans-serif; font-size: 14px; resize: vertical; min-height: 120px; transition: border-color 0.3s; }
-        textarea:focus { border-color: #1AAD19; outline: none; box-shadow: 0 0 0 2px rgba(26,173,25,0.1); }
-        select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; background: #fff; font-size: 14px; }
-        select:focus { border-color: #1AAD19; outline: none; }
-        .btn { padding: 10px 18px; background: #1AAD19; color: #fff; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 500; margin-right: 8px; margin-bottom: 8px; transition: background 0.3s; display: inline-flex; align-items: center; gap: 6px; }
-        .btn:hover { background: #129611; }
-        .btn:disabled { background: #ccc; cursor: not-allowed; }
-        .btn-secondary { background: #8c8c8c; }
-        .btn-secondary:hover { background: #6d6d6d; }
-        .btn-icon { padding: 10px 14px; font-size: 16px; }
-        .output { background: #f8f8f8; padding: 14px; border-radius: 6px; min-height: 120px; font-size: 15px; white-space: pre-wrap; word-wrap: break-word; line-height: 1.8; border: 1px solid #eee; }
-        .status { padding: 12px; background: #fffbe6; border-radius: 6px; margin-bottom: 16px; font-size: 13px; border-left: 4px solid #faad14; }
-        .status.success { background: #f6ffed; border-color: #1AAD19; }
-        .status.error { background: #fff2f0; border-color: #ff4d4f; }
-        .status.hidden { display: none; }
-        .notification { position: fixed; top: 20px; right: 20px; background: #fff; border-left: 4px solid #1AAD19; padding: 14px 18px; max-width: 340px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 1000; font-size: 14px; border-radius: 6px; }
-        .notification.success { border-color: #1AAD19; }
-        .notification.error { border-color: #ff4d4f; }
-        .notification.hidden { display: none; }
-        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; z-index: 2000; }
-        .modal.hidden { display: none; }
-        .modal-content { background: #fff; padding: 24px; max-width: 600px; width: 90%; max-height: 80vh; overflow-y: auto; border-radius: 12px; }
-        .modal-header { font-size: 18px; font-weight: bold; margin-bottom: 16px; color: #333; }
-        .modal-body { margin-bottom: 16px; font-size: 14px; line-height: 1.8; }
-        .progress-bar { width: 100%; height: 10px; background: #f0f0f0; border-radius: 5px; margin-top: 12px; overflow: hidden; }
-        .progress-fill { height: 100%; background: linear-gradient(90deg, #1AAD19, #129611); width: 0%; transition: width 0.3s ease; border-radius: 5px; }
-        .info-text { font-size: 12px; color: #999; margin-top: 6px; }
-        .model-info { background: #f8f8f8; padding: 12px; margin-top: 12px; font-size: 12px; border-radius: 6px; border-left: 4px solid #1AAD19; }
-        .lang-selector-grid { display: grid; grid-template-columns: 1fr auto 1fr; gap: 12px; align-items: end; margin-bottom: 16px; }
-        .swap-btn-container { display: flex; align-items: center; justify-content: center; padding-bottom: 8px; }
-        .swap-btn { padding: 10px 14px; background: #f0f0f0; color: #666; border: none; cursor: pointer; font-size: 18px; border-radius: 50%; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; transition: all 0.3s; }
-        .swap-btn:hover { background: #e0e0e0; color: #1AAD19; }
-        .swap-btn:disabled { background: #f5f5f5; cursor: not-allowed; color: #ccc; }
-        .offline-controls { background: #f6ffed; border: 1px solid #b7eb8f; border-radius: 8px; padding: 16px; margin-bottom: 16px; }
-        .offline-controls-title { font-size: 15px; font-weight: bold; margin-bottom: 10px; color: #1AAD19; display: flex; align-items: center; gap: 8px; }
-        .file-list { background: #fff; border: 1px solid #ddd; padding: 12px; margin-top: 12px; font-size: 12px; max-height: 150px; overflow-y: auto; border-radius: 6px; }
-        .file-item { padding: 6px; border-bottom: 1px solid #f0f0f0; }
-        .file-item:last-child { border-bottom: none; }
-        .spinner-container { display: flex; align-items: center; justify-content: center; padding: 24px; }
-        .spinner { width: 40px; height: 40px; border: 4px solid #f0f0f0; border-top: 4px solid #1AAD19; border-radius: 50%; animation: spin 1s linear infinite; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        .pulse { animation: pulse 1.5s ease-in-out infinite; }
-        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
-        
-        /* Toggle Switch */
-        .toggle-container { display: flex; align-items: center; gap: 12px; background: #fff; padding: 12px 16px; border-radius: 8px; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
-        .toggle-label { font-size: 14px; color: #333; font-weight: 500; flex: 1; }
-        .toggle-switch { position: relative; width: 52px; height: 28px; }
-        .toggle-switch input { opacity: 0; width: 0; height: 0; }
-        .toggle-slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .3s; border-radius: 28px; }
-        .toggle-slider:before { position: absolute; content: ""; height: 22px; width: 22px; left: 3px; bottom: 3px; background-color: white; transition: .3s; border-radius: 50%; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
-        .toggle-switch input:checked + .toggle-slider { background-color: #1AAD19; }
-        .toggle-switch input:checked + .toggle-slider:before { transform: translateX(24px); }
-        .toggle-status { font-size: 12px; color: #666; }
-        .online-status { display: inline-flex; align-items: center; gap: 4px; }
-        .online-dot { width: 8px; height: 8px; border-radius: 50%; }
-        .online-dot.active { background: #1AAD19; }
-        .online-dot.inactive { background: #999; }
-        
-        /* Voice buttons */
-        .voice-btn { background: #f0f0f0; border: 1px solid #ddd; border-radius: 50%; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 16px; transition: all 0.3s; }
-        .voice-btn:hover { background: #e0e0e0; }
-        .voice-btn.recording { background: #ff4d4f; color: white; animation: pulse 1s infinite; }
-        .input-with-voice { position: relative; }
-        .input-with-voice textarea { padding-right: 50px; }
-        .voice-btn-container { position: absolute; right: 10px; top: 10px; }
-        .output-with-voice { position: relative; }
-        .output-actions { position: absolute; right: 12px; top: 12px; display: flex; gap: 8px; }
-        
-        @media (max-width: 640px) { .container { padding: 12px; } .card { padding: 14px; } .header { margin-bottom: 12px; flex-direction: column; align-items: flex-start; gap: 4px; } .notification { right: 10px; top: 10px; max-width: calc(100% - 20px); } .lang-selector-grid { grid-template-columns: 1fr; } .swap-btn-container { padding-bottom: 0; margin-bottom: 12px; } }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        h1 {
+            color: #1aad19;
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            color: #666;
+            font-size: 0.9em;
+        }
+        .mode-toggle {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 25px;
+            padding: 15px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .mode-label {
+            font-weight: 600;
+            color: #333;
+        }
+        .toggle-switch {
+            position: relative;
+            width: 60px;
+            height: 32px;
+        }
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: 0.3s;
+            border-radius: 32px;
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: 0.3s;
+            border-radius: 50%;
+        }
+        input:checked + .slider {
+            background-color: #1aad19;
+        }
+        input:checked + .slider:before {
+            transform: translateX(28px);
+        }
+        .mode-indicator {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 600;
+        }
+        .mode-indicator.online {
+            background: #e8f5e9;
+            color: #1aad19;
+        }
+        .mode-indicator.offline {
+            background: #fff3e0;
+            color: #ff9800;
+        }
+        .translator-card {
+            background: white;
+            border-radius: 16px;
+            padding: 25px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        .lang-selector {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .lang-group {
+            flex: 1;
+            min-width: 200px;
+        }
+        .lang-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #555;
+        }
+        .lang-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1em;
+            background: white;
+            cursor: pointer;
+            transition: border-color 0.3s;
+        }
+        .lang-group select:focus {
+            outline: none;
+            border-color: #1aad19;
+        }
+        .swap-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 50px;
+            height: 50px;
+            border: none;
+            background: #1aad19;
+            color: white;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.2em;
+            transition: all 0.3s;
+            align-self: flex-end;
+            margin-bottom: 5px;
+        }
+        .swap-btn:hover {
+            background: #148f14;
+            transform: rotate(180deg);
+        }
+        .textarea-group {
+            position: relative;
+            margin-bottom: 20px;
+        }
+        .textarea-group textarea {
+            width: 100%;
+            min-height: 150px;
+            padding: 15px;
+            padding-right: 100px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            font-size: 1.1em;
+            resize: vertical;
+            transition: border-color 0.3s;
+            line-height: 1.6;
+        }
+        .textarea-group textarea:focus {
+            outline: none;
+            border-color: #1aad19;
+        }
+        .textarea-actions {
+            position: absolute;
+            right: 10px;
+            top: 10px;
+            display: flex;
+            gap: 8px;
+        }
+        .action-btn {
+            width: 36px;
+            height: 36px;
+            border: none;
+            background: #f5f5f5;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9em;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+        .action-btn:hover {
+            background: #e0e0e0;
+        }
+        .action-btn.speak {
+            background: #e8f5e9;
+            color: #1aad19;
+        }
+        .action-btn.speak:hover {
+            background: #c8e6c9;
+        }
+        .action-btn.mic {
+            background: #e3f2fd;
+            color: #2196f3;
+        }
+        .action-btn.mic:hover {
+            background: #bbdefb;
+        }
+        .action-btn.mic.recording {
+            background: #ffcdd2;
+            color: #f44336;
+            animation: pulse 1s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+        .action-btn.clear {
+            background: #fce4ec;
+            color: #e91e63;
+        }
+        .action-btn.clear:hover {
+            background: #f8bbd9;
+        }
+        .translate-btn {
+            width: 100%;
+            padding: 15px;
+            background: #1aad19;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+            margin-bottom: 15px;
+        }
+        .translate-btn:hover {
+            background: #148f14;
+        }
+        .translate-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .result-area {
+            background: #f9f9f9;
+            border-radius: 12px;
+            padding: 20px;
+            min-height: 150px;
+            border: 2px solid #e0e0e0;
+        }
+        .result-text {
+            font-size: 1.1em;
+            line-height: 1.8;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+        .result-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        .result-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9em;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.2s;
+        }
+        .result-btn.copy {
+            background: #e8f5e9;
+            color: #1aad19;
+        }
+        .result-btn.copy:hover {
+            background: #c8e6c9;
+        }
+        .result-btn.read {
+            background: #e3f2fd;
+            color: #2196f3;
+        }
+        .result-btn.read:hover {
+            background: #bbdefb;
+        }
+        .model-section {
+            margin-top: 25px;
+            padding-top: 20px;
+            border-top: 1px solid #e0e0e0;
+        }
+        .model-section h3 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1em;
+        }
+        .model-status {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #ccc;
+        }
+        .status-dot.loaded {
+            background: #4caf50;
+        }
+        .status-dot.loading {
+            background: #ff9800;
+            animation: blink 1s infinite;
+        }
+        @keyframes blink {
+            50% { opacity: 0.5; }
+        }
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e0e0e0;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 15px;
+        }
+        .progress-fill {
+            height: 100%;
+            background: #1aad19;
+            transition: width 0.3s;
+            width: 0%;
+        }
+        .model-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .model-btn {
+            padding: 10px 20px;
+            border: 2px solid #1aad19;
+            background: white;
+            color: #1aad19;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        .model-btn:hover {
+            background: #1aad19;
+            color: white;
+        }
+        .model-btn:disabled {
+            border-color: #ccc;
+            color: #ccc;
+            cursor: not-allowed;
+        }
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: #333;
+            color: white;
+            padding: 12px 25px;
+            border-radius: 25px;
+            opacity: 0;
+            transition: all 0.3s;
+            z-index: 1000;
+        }
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+        footer {
+            text-align: center;
+            margin-top: 30px;
+            color: #888;
+            font-size: 0.85em;
+        }
+        @media (max-width: 600px) {
+            .lang-selector {
+                flex-direction: column;
+            }
+            .swap-btn {
+                align-self: center;
+                transform: rotate(90deg);
+            }
+            .swap-btn:hover {
+                transform: rotate(270deg);
+            }
+        }
     </style>
 </head>
 <body>
-    <div class="header">
-        <div>
-            <h1>🗣️ 老挝语翻译</h1>
-            <div class="header-brand">离线翻译 · NLLB-200 模型驱动</div>
-        </div>
-    </div>
     <div class="container">
-        <div id="statusBar" class="status hidden"></div>
-        
-        <!-- Online/Offline Toggle -->
-        <div class="toggle-container">
-            <div>
-                <div class="toggle-label">翻译模式</div>
-                <div class="toggle-status">
-                    <span class="online-status">
-                        <span id="onlineDot" class="online-dot active"></span>
-                        <span id="modeStatus">在线模式</span>
-                    </span>
-                </div>
-            </div>
+        <header>
+            <h1>🌏 老挝语 ↔ 中文 翻译器</h1>
+            <p class="subtitle">支持语音输入 / 语音朗读 / 在线翻译 / 离线翻译</p>
+        </header>
+
+        <div class="mode-toggle">
+            <span class="mode-label">翻译模式</span>
             <label class="toggle-switch">
-                <input type="checkbox" id="onlineToggle">
-                <span class="toggle-slider"></span>
+                <input type="checkbox" id="modeToggle" checked>
+                <span class="slider"></span>
             </label>
-            <div style="flex:1"></div>
-            <div style="font-size: 12px; color: #999; text-align: right;">
-                <div>在线: LibreTranslate API</div>
-                <div>离线: 本地 NLLB 模型</div>
+            <span class="mode-label">在线翻译 (Google)</span>
+            <span id="modeIndicator" class="mode-indicator online">在线模式</span>
+        </div>
+
+        <div class="translator-card">
+            <div class="lang-selector">
+                <div class="lang-group">
+                    <label>源语言</label>
+                    <select id="srcLang">
+                        <option value="zho_Hans" selected>中文(简体)</option>
+                        <option value="zho_Hant">中文(繁体)</option>
+                        <option value="lao_Laoo">老挝语</option>
+                        <option value="eng_Latn">英语</option>
+                        <option value="tha_Thai">泰语</option>
+                        <option value="vie_Latn">越南语</option>
+                    </select>
+                </div>
+                <button class="swap-btn" id="swapBtn" title="交换语言">⇄</button>
+                <div class="lang-group">
+                    <label>目标语言</label>
+                    <select id="tgtLang">
+                        <option value="zho_Hans">中文(简体)</option>
+                        <option value="zho_Hant">中文(繁体)</option>
+                        <option value="lao_Laoo" selected>老挝语</option>
+                        <option value="eng_Latn">英语</option>
+                        <option value="tha_Thai">泰语</option>
+                        <option value="vie_Latn">越南语</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="textarea-group">
+                <textarea id="inputText" placeholder="请输入要翻译的文字...&#10;也可以点击麦克风按钮进行语音输入"></textarea>
+                <div class="textarea-actions">
+                    <button class="action-btn mic" id="micBtn" title="语音输入">🎤</button>
+                    <button class="action-btn speak" id="speakInputBtn" title="朗读输入">🔊</button>
+                    <button class="action-btn clear" id="clearBtn" title="清空">✕</button>
+                </div>
+            </div>
+
+            <button class="translate-btn" id="translateBtn">翻译</button>
+
+            <div class="result-area">
+                <div class="result-text" id="resultText">翻译结果将显示在这里</div>
+                <div class="result-actions">
+                    <button class="result-btn copy" id="copyBtn">📋 复制</button>
+                    <button class="result-btn read" id="readBtn">🔊 朗读结果</button>
+                </div>
+            </div>
+
+            <div class="model-section">
+                <h3>🤖 离线翻译模型 (NLLB-200 Distilled)</h3>
+                <div class="model-status">
+                    <span class="status-dot" id="statusDot"></span>
+                    <span id="modelStatus">模型未加载</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+                <div class="model-actions">
+                    <button class="model-btn" id="downloadModelBtn">📥 下载模型</button>
+                    <button class="model-btn" id="loadModelBtn" disabled>📂 加载本地模型</button>
+                    <input type="file" id="modelFile" accept=".bin" style="display:none">
+                </div>
             </div>
         </div>
-        
-        <div class="card">
-            <div class="offline-controls">
-                <div class="offline-controls-title">📦 离线模型管理</div>
-                <div style="margin-bottom: 12px; font-size: 13px; color: #666;">
-                    下载翻译模型（约900MB）到本地，离线翻译无需网络。所有处理在本地完成，保护隐私。
-                </div>
-                <div>
-                    <button id="downloadModelBtn" class="btn btn-secondary">📥 下载模型文件</button>
-                    <button id="loadModelBtn" class="btn" style="background:#1AAD19;">📂 从文件夹加载模型</button>
-                </div>
-                <div class="info-text" style="margin-top: 10px;">
-                    <span id="offlineStatus">状态：未加载模型 - 点击"下载模型文件"开始</span>
-                </div>
-                <div id="fileList" class="file-list" style="display: none;">
-                    <strong>已加载的模型文件：</strong>
-                    <div id="fileListContent"></div>
-                </div>
-            </div>
-        </div>
-        
-        <div class="card">
-            <div class="input-with-voice">
-                <div class="input-group">
-                    <label for="sourceText">
-                        源文本
-                        <button id="voiceInputBtn" class="voice-btn" title="语音输入">🎤</button>
-                    </label>
-                    <textarea id="sourceText" placeholder="输入要翻译的文字...">这个应用程序提供超过200种语言的离线人工智能翻译，无需互联网连接。翻译速度快、准确度高，所有处理在本地完成，保护用户隐私。</textarea>
-                    <div class="voice-btn-container">
-                        <button id="voiceInputBtnFloat" class="voice-btn" title="语音输入">🎤</button>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="lang-selector-grid">
-                <div class="input-group" style="margin-bottom: 0;">
-                    <label for="sourceLang">源语言</label>
-                    <select id="sourceLang"></select>
-                </div>
-                <div class="swap-btn-container">
-                    <button id="swapBtn" class="swap-btn" title="交换语言">⇄</button>
-                </div>
-                <div class="input-group" style="margin-bottom: 0;">
-                    <label for="targetLang">目标语言</label>
-                    <select id="targetLang"></select>
-                </div>
-            </div>
-            <div class="info-text" style="margin-bottom: 16px;">支持200多种语言，涵盖拉丁文、阿拉伯文、西里尔文、梵文等</div>
-            <div>
-                <button id="translateBtn" class="btn" disabled>🔄 翻译</button>
-                <button id="clearBtn" class="btn btn-secondary">🗑️ 清空</button>
-            </div>
-            <div class="model-info" id="modelInfo" style="display: none;">
-                <strong>模型：</strong> <span id="modelName">-</span><br>
-                <strong>大小：</strong> <span id="modelSize">-</span><br>
-                <strong>来源：</strong> <span id="modelSource">-</span><br>
-                <strong>状态：</strong> <span id="modelStatus">未加载</span>
-            </div>
-        </div>
-        
-        <div class="card">
-            <div class="input-group">
-                <label>
-                    翻译结果
-                    <button id="voiceOutputBtn" class="voice-btn" title="朗读翻译结果">🔊</button>
-                </label>
-                <div id="output" class="output">翻译结果将显示在这里...</div>
-                <div id="translationInfo" class="info-text"></div>
-            </div>
-        </div>
+
+        <footer>
+            <p>© 2024 老挝语翻译器 | 支持在线翻译与离线翻译</p>
+        </footer>
     </div>
-    
-    <div id="notification" class="notification hidden"></div>
-    <div id="modal" class="modal hidden">
-        <div class="modal-content">
-            <div class="modal-header" id="modalTitle">加载中</div>
-            <div class="modal-body" id="modalBody">
-                <div id="modalText">请稍候...</div>
-                <div id="progressBarContainer" class="progress-bar">
-                    <div id="progressFill" class="progress-fill"></div>
-                </div>
-                <div class="info-text" id="progressText" style="margin-top: 8px;">初始化中...</div>
-            </div>
-            <div>
-                <button id="modalCloseBtn" class="btn btn-secondary" style="display: none;">关闭</button>
-            </div>
-        </div>
-    </div>
-    
-    <script type="module">
-        import { pipeline, env } from 'https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.2';
-        env.allowLocalModels = true;
-        env.useBrowserCache = true;
-        
-        const MODEL_FILES = [
-            'config.json',
-            'generation_config.json',
-            'tokenizer.json',
-            'tokenizer_config.json',
-            'special_tokens_map.json',
-            'onnx/decoder_model_merged_quantized.onnx',
-            'onnx/encoder_model_quantized.onnx'
-        ];
-        const MODEL_BASE_URL = 'https://huggingface.co/Xenova/nllb-200-distilled-600M/resolve/main/';
-        
-        // LibreTranslate API 配置
-        const LIBRETRANSLATE_API = 'https://libretranslate.com/translate';
-        const LIBRETRANSLATE_FALLBACK = 'https://translate.argosopentech.com/translate';
-        
-        const LANGUAGE_MAP = {
-            'ace_Arab': '亚齐语（阿拉伯文）', 'ace_Latn': '亚齐语（拉丁文）', 'acm_Arab': '美索不达米亚阿拉伯语',
-            'acq_Arab': '塔伊兹-亚丁阿拉伯语', 'aeb_Arab': '突尼斯阿拉伯语', 'afr_Latn': '南非荷兰语',
-            'ajp_Arab': '南黎凡特阿拉伯语', 'aka_Latn': '阿坎语', 'amh_Ethi': '阿姆哈拉语',
-            'apc_Arab': '北黎凡特阿拉伯语', 'arb_Arab': '标准阿拉伯语', 'ars_Arab': '纳吉德阿拉伯语',
-            'ary_Arab': '摩洛哥阿拉伯语', 'arz_Arab': '埃及阿拉伯语', 'asm_Beng': '阿萨姆语',
-            'ast_Latn': '阿斯图里亚斯语', 'awa_Deva': '阿瓦德语', 'ayr_Latn': '中艾马拉语',
-            'azb_Arab': '南阿塞拜疆语', 'azj_Latn': '北阿塞拜疆语', 'bak_Cyrl': '巴什基尔语',
-            'bam_Latn': '班巴拉语', 'ban_Latn': '巴厘语', 'bel_Cyrl': '白俄罗斯语',
-            'bem_Latn': '本巴语', 'ben_Beng': '孟加拉语', 'bho_Deva': '博杰普尔语',
-            'bjn_Arab': '班jal尔语（阿拉伯文）', 'bjn_Latn': '班jal尔语（拉丁文）', 'bod_Tibt': '藏语',
-            'bos_Latn': '波斯尼亚语', 'bug_Latn': '布吉语', 'bul_Cyrl': '保加利亚语',
-            'cat_Latn': '加泰罗尼亚语', 'ceb_Latn': '宿务语', 'ces_Latn': '捷克语',
-            'cjk_Latn': '乔奎语', 'ckb_Arab': '中部库尔德语', 'crh_Latn': '克里米亚鞑靼语',
-            'cym_Latn': '威尔士语', 'dan_Latn': '丹麦语', 'deu_Latn': '德语',
-            'dik_Latn': '西南丁卡语', 'dyu_Latn': '迪尤拉语', 'dzo_Tibt': '不丹语',
-            'ell_Grek': '希腊语', 'eng_Latn': '英语', 'epo_Latn': '世界语',
-            'est_Latn': '爱沙尼亚语', 'eus_Latn': '巴斯克语', 'ewe_Latn': '埃维语',
-            'fao_Latn': '法罗语', 'pes_Arab': '西部波斯语', 'fij_Latn': '斐济语',
-            'fin_Latn': '芬兰语', 'fon_Latn': '丰语', 'fra_Latn': '法语',
-            'fur_Latn': '弗留利语', 'fuv_Latn': '尼日利亚富拉尼语', 'gla_Latn': '苏格兰盖尔语',
-            'gle_Latn': '爱尔兰语', 'glg_Latn': '加利西亚语', 'grn_Latn': '瓜拉尼语',
-            'guj_Gujr': '古吉拉特语', 'hat_Latn': '海地克里奥尔语', 'hau_Latn': '豪萨语',
-            'heb_Hebr': '希伯来语', 'hin_Deva': '印地语', 'hne_Deva': '切蒂斯格尔语',
-            'hrv_Latn': '克罗地亚语', 'hun_Latn': '匈牙利语', 'hye_Armn': '亚美尼亚语',
-            'ibo_Latn': '伊博语', 'ilo_Latn': '伊洛卡诺语', 'ind_Latn': '印尼语',
-            'isl_Latn': '冰岛语', 'ita_Latn': '意大利语', 'jav_Latn': '爪哇语',
-            'jpn_Jpan': '日语', 'kab_Latn': '卡拜尔语', 'kac_Latn': '景颇语',
-            'kam_Latn': '卡姆巴语', 'kan_Knda': '卡纳达语', 'kas_Arab': '克什米尔语（阿拉伯文）',
-            'kas_Deva': '克什米尔语（梵文）', 'kat_Geor': '格鲁吉亚语', 'knc_Arab': '中卡努里语（阿拉伯文）',
-            'knc_Latn': '中卡努里语（拉丁文）', 'kaz_Cyrl': '哈萨克语', 'kbp_Latn': '卡比耶语',
-            'kea_Latn': '卡布弗迪乌语', 'khm_Khmr': '高棉语', 'kik_Latn': '基库尤语',
-            'kin_Latn': '卢旺达语', 'kir_Cyrl': '吉尔吉斯语', 'kmb_Latn': '基姆本杜语',
-            'kon_Latn': '刚果语', 'kor_Hang': '韩语', 'kmr_Latn': '北库尔德语',
-            'lao_Laoo': '老挝语', 'lvs_Latn': '拉脱维亚语', 'lij_Latn': '利古里亚语',
-            'lim_Latn': '林堡语', 'lin_Latn': '林加拉语', 'lit_Latn': '立陶宛语',
-            'lmo_Latn': '伦巴第语', 'ltg_Latn': '拉特加莱语', 'ltz_Latn': '卢森堡语',
-            'lua_Latn': '卢巴-加丹加语', 'lug_Latn': '干达语', 'luo_Latn': '卢奥语',
-            'lus_Latn': '米佐语', 'mag_Deva': 'magahi语', 'mai_Deva': '迈蒂利语',
-            'mal_Mlym': '马拉雅拉姆语', 'mar_Deva': '马拉地语', 'min_Latn': '米南卡堡语',
-            'mkd_Cyrl': '马其顿语', 'plt_Latn': '马尔加什高原语', 'mlt_Latn': '马耳他语',
-            'mni_Beng': '曼尼普尔语', 'khk_Cyrl': '蒙古语', 'mos_Latn': '莫西语',
-            'mri_Latn': '毛利语', 'zsm_Latn': '马来语', 'mya_Mymr': '缅甸语',
-            'nld_Latn': '荷兰语', 'nno_Latn': '挪威尼诺斯克语', 'nob_Latn': '挪威博克马尔语',
-            'npi_Deva': '尼泊尔语', 'nso_Latn': '北索托语', 'nus_Latn': '努埃尔语',
-            'nya_Latn': '奇切瓦语', 'oci_Latn': '奥克语', 'gaz_Latn': '西奥罗莫语',
-            'ory_Orya': '奥里亚语', 'pag_Latn': '庞加辛语', 'pan_Guru': '旁遮普语',
-            'pap_Latn': '帕皮阿门托语', 'pol_Latn': '波兰语', 'por_Latn': '葡萄牙语',
-            'prs_Arab': '达里语', 'pbt_Arab': '南普什图语', 'quy_Latn': '阿亚库乔克丘亚语',
-            'ron_Latn': '罗马尼亚语', 'run_Latn': '隆迪语', 'rus_Cyrl': '俄语',
-            'sag_Latn': '桑戈语', 'san_Deva': '梵语', 'sat_Beng': '桑塔利语',
-            'scn_Latn': '西西里语', 'shn_Mymr': '掸语', 'sin_Sinh': '僧伽罗语',
-            'slk_Latn': '斯洛伐克语', 'slv_Latn': '斯洛文尼亚语', 'smo_Latn': '萨摩亚语',
-            'sna_Latn': '修纳语', 'snd_Arab': '信德语', 'som_Latn': '索马里语',
-            'sot_Latn': '南索托语', 'spa_Latn': '西班牙语', 'als_Latn': '阿尔巴尼亚语',
-            'srd_Latn': '撒丁语', 'srp_Cyrl': '塞尔维亚语', 'ssw_Latn': '斯瓦蒂语',
-            'sun_Latn': '巽他语', 'swe_Latn': '瑞典语', 'swh_Latn': '斯瓦希里语',
-            'szl_Latn': '西里西亚语', 'tam_Taml': '泰米尔语', 'tat_Cyrl': '鞑靼语',
-            'tel_Telu': '泰卢固语', 'tgk_Cyrl': '塔吉克语', 'tgl_Latn': '他加禄语',
-            'tha_Thai': '泰语', 'tir_Ethi': '提格雷语', 'taq_Latn': '塔马舍克语（拉丁文）',
-            'taq_Tfng': '塔马舍克语（提非纳文）', 'tpi_Latn': '托克皮辛语', 'tsn_Latn': '茨瓦纳语',
-            'tso_Latn': '聪加语', 'tuk_Latn': '土库曼语', 'tum_Latn': '通布卡语',
-            'tur_Latn': '土耳其语', 'twi_Latn': '特威语', 'tzm_Tfng': '中阿特拉斯塔马齐格特语',
-            'uig_Arab': '维吾尔语', 'ukr_Cyrl': '乌克兰语', 'umb_Latn': '翁本杜语',
-            'urd_Arab': '乌尔都语', 'uzn_Latn': '乌兹别克语', 'vec_Latn': '威尼托语',
-            'vie_Latn': '越南语', 'war_Latn': '瓦瑞语', 'wol_Latn': '沃洛夫语',
-            'xho_Latn': '科萨语', 'ydd_Hebr': '意第绪语', 'yor_Latn': '约鲁巴语',
-            'yue_Hant': '粤语', 'zho_Hans': '中文（简体）', 'zho_Hant': '中文（繁体）',
-            'zul_Latn': '祖鲁语'
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+        // 语言代码映射
+        const langMap = {
+            'zho_Hans': 'zh-CN',
+            'zho_Hant': 'zh-TW',
+            'lao_Laoo': 'lo',
+            'eng_Latn': 'en',
+            'tha_Thai': 'th',
+            'vie_Latn': 'vi'
         };
-        
-        // 语言代码映射到 LibreTranslate
-        const LIBRE_LANG_MAP = {
-            'zho_Hans': 'zh', 'zho_Hant': 'zh', 'eng_Latn': 'en', 'lao_Laoo': 'lo',
-            'jpn_Jpan': 'ja', 'kor_Hang': 'ko', 'fra_Latn': 'fr', 'deu_Latn': 'de',
-            'spa_Latn': 'es', 'por_Latn': 'pt', 'ita_Latn': 'it', 'rus_Cyrl': 'ru',
-            'ara_Arab': 'ar', 'hin_Deva': 'hi', 'vie_Latn': 'vi', 'tha_Thai': 'th',
-            'ind_Latn': 'id', 'msa_Latn': 'ms', 'tur_Latn': 'tr', 'pol_Latn': 'pl',
-            'nld_Latn': 'nl', 'ukr_Cyrl': 'uk', 'ces_Latn': 'cs', 'swe_Latn': 'sv',
-            'dan_Latn': 'da', 'fin_Latn': 'fi', 'nor_Latn': 'no', 'hun_Latn': 'hu',
-            'ron_Latn': 'ro', 'bul_Cyrl': 'bg', 'ell_Grek': 'el', 'heb_Hebr': 'he'
+
+        const nllbLangMap = {
+            'zho_Hans': 'zho_Hans',
+            'zho_Hant': 'zho_Hant',
+            'lao_Laoo': 'lao_Laoo',
+            'eng_Latn': 'eng_Latn',
+            'tha_Thai': 'tha_Thai',
+            'vie_Latn': 'vie_Latn'
         };
-        
-        const yieldToBrowser = () => new Promise(resolve => {
-            requestAnimationFrame(() => {
-                requestAnimationFrame(() => {
-                    setTimeout(resolve, 0);
-                });
-            });
-        });
-        
-        class TranslationEngine {
-            constructor() {
-                this.translator = null;
-                this.isInitialized = false;
-                this.localModelPath = null;
-                this.isOnlineMode = true; // 默认在线模式
+
+        // Google Translate 在线翻译
+        async function googleTranslate(text, src, tgt) {
+            const sl = langMap[src] || 'auto';
+            const tl = langMap[tgt] || 'lo';
+            const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=${sl}&tl=${tl}&hl=${tl}&dt=t&q=${encodeURIComponent(text)}`;
+            const resp = await fetch(url, { headers: { 'User-Agent': 'Mozilla/5.0' } });
+            const data = await resp.json();
+            if (data && data[0]) {
+                return data[0].map(x => x[0]).join('');
             }
-            
-            setOnlineMode(online) {
-                this.isOnlineMode = online;
-                updateButtonStates();
-            }
-            
-            async onlineTranslate(text, srcLang, tgtLang) {
-                const srcCode = LIBRE_LANG_MAP[srcLang] || 'en';
-                const tgtCode = LIBRE_LANG_MAP[tgtLang] || 'en';
-                
-                try {
-                    const response = await fetch(LIBRETRANSLATE_API, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            q: text,
-                            source: srcCode,
-                            target: tgtCode,
-                            format: 'text'
-                        })
-                    });
-                    
-                    if (!response.ok) throw new Error('API请求失败');
-                    const data = await response.json();
-                    return data.translatedText;
-                } catch (error) {
-                    // 尝试备用服务器
-                    try {
-                        const response = await fetch(LIBRETRANSLATE_FALLBACK, {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({
-                                q: text,
-                                source: srcCode,
-                                target: tgtCode,
-                                format: 'text'
-                            })
-                        });
-                        if (!response.ok) throw new Error('备用服务器也失败');
-                        const data = await response.json();
-                        return data.translatedText;
-                    } catch (e) {
-                        throw new Error('在线翻译失败，请检查网络连接或切换离线模式');
-                    }
-                }
-            }
-            
-            async downloadModelFiles() {
-                try {
-                    if (!('showDirectoryPicker' in window)) {
-                        throw new Error('您的浏览器不支持文件访问API。请使用 Chrome、Edge 或 Opera 浏览器。');
-                    }
-                    showModal('下载模型文件', '请选择一个空文件夹来保存模型文件...');
-                    
-                    const dirHandle = await window.showDirectoryPicker({ mode: 'readwrite' });
-                    updateProgress(5, '开始下载...');
-                    let completedFiles = 0;
-                    const totalFiles = MODEL_FILES.length;
-                    
-                    for (const fileName of MODEL_FILES) {
-                        try {
-                            const percentBase = Math.floor((completedFiles / totalFiles) * 90);
-                            updateProgress(5 + percentBase, `正在下载 ${fileName}... (${completedFiles + 1}/${totalFiles})`);
-                            const response = await fetch(MODEL_BASE_URL + fileName);
-                            if (!response.ok) throw new Error(`下载 ${fileName} 失败`);
-                            const blob = await response.blob();
-                            const pathParts = fileName.split('/');
-                            let currentDir = dirHandle;
-                            
-                            for (let i = 0; i < pathParts.length - 1; i++) {
-                                currentDir = await currentDir.getDirectoryHandle(pathParts[i], { create: true });
-                            }
-                            const fileHandle = await currentDir.getFileHandle(pathParts[pathParts.length - 1], { create: true });
-                            const writable = await fileHandle.createWritable();
-                            await writable.write(blob);
-                            await writable.close();
-                            completedFiles++;
-                            await yieldToBrowser();
-                        } catch (error) {
-                            throw new Error(`下载 ${fileName} 失败: ${error.message}`);
-                        }
-                    }
-                    updateProgress(100, '下载完成！');
-                    
-                    setTimeout(() => {
-                        hideModal();
-                        showNotification('模型文件下载完成！请点击"从文件夹加载模型"使用。', 'success');
-                    }, 1000);
-                } catch (error) {
-                    console.error('下载错误:', error);
-                    updateModalError(`下载失败: ${error.message}`);
-                }
-            }
-            
-            async loadFromLocalFolder() {
-                try {
-                    if (!('showDirectoryPicker' in window)) {
-                        throw new Error('您的浏览器不支持文件访问API。请使用 Chrome、Edge 或 Opera 浏览器。');
-                    }
-                    showModal('加载模型', '请选择包含模型文件的文件夹...');
-                    const dirHandle = await window.showDirectoryPicker({ mode: 'read' });
-                    updateProgress(5, '正在验证文件...');
-                    await yieldToBrowser();
-                    
-                    const missingFiles = [];
-                    for (const fileName of MODEL_FILES) {
-                        const pathParts = fileName.split('/');
-                        let currentDir = dirHandle;
-                        
-                        try {
-                            for (let i = 0; i < pathParts.length - 1; i++) {
-                                currentDir = await currentDir.getDirectoryHandle(pathParts[i]);
-                            }
-                            await currentDir.getFileHandle(pathParts[pathParts.length - 1]);
-                        } catch {
-                            missingFiles.push(fileName);
-                        }
-                    }
-                    
-                    if (missingFiles.length > 0) {
-                        throw new Error(`缺少文件: ${missingFiles.join(', ')}`);
-                    }
-                    
-                    updateProgress(15, '所有文件验证成功');
-                    await yieldToBrowser();
-                    updateProgress(20, '正在加载模型到内存...');
-                    await yieldToBrowser();
-                    
-                    await this.initializeFromLocal(dirHandle);
-                    document.getElementById('offlineStatus').textContent = '状态：✅ 离线模型已加载就绪';
-                    document.getElementById('modelSource').textContent = '本地文件夹（离线）';
-                    updateFileList(MODEL_FILES);
-                    setTimeout(() => {
-                        hideModal();
-                        showNotification('离线模型加载成功！', 'success');
-                        updateButtonStates();
-                    }, 500);
-                } catch (error) {
-                    console.error('加载错误:', error);
-                    updateModalError(`加载失败: ${error.message}`);
-                }
-            }
-            
-            async initializeFromLocal(dirHandle) {
-                this.localModelPath = dirHandle;
-                let lastProgress = 20;
-                
-                const progressCallback = (progress) => {
-                    if (progress.status === 'progress' && progress.progress !== undefined) {
-                        const percent = Math.min(95, 20 + Math.floor(progress.progress * 75));
-                        if (percent > lastProgress) {
-                            lastProgress = percent;
-                            updateProgress(percent, `正在加载模型: ${Math.floor(progress.progress * 100)}%`);
-                        }
-                    } else if (progress.status === 'done') {
-                        updateProgress(98, '正在完成...');
-                    }
-                };
-                
-                this.translator = await pipeline(
-                    'translation',
-                    'Xenova/nllb-200-distilled-600M',
-                    { 
-                        progress_callback: progressCallback,
-                        quantized: true
-                    }
-                );
-                this.isInitialized = true;
-                updateProgress(100, '模型加载成功！');
-                updateModelInfo('NLLB-200 Distilled (600M)', '~900MB', '本地文件夹', '已加载就绪');
-            }
-            
-            async translate(text, srcLang, tgtLang) {
-                // 在线模式使用 API
-                if (this.isOnlineMode) {
-                    return await this.onlineTranslate(text, srcLang, tgtLang);
-                }
-                
-                // 离线模式使用本地模型
-                if (!this.isInitialized) {
-                    throw new Error('模型未加载。请先加载离线模型。');
-                }
-                if (srcLang === tgtLang) {
-                    throw new Error('源语言和目标语言必须不同');
-                }
-                
-                try {
-                    showTranslationModal();
-                    await yieldToBrowser();
-                    await yieldToBrowser();
-                    await yieldToBrowser();
-                    
-                    const result = await this.translator(text, {
-                        src_lang: srcLang,
-                        tgt_lang: tgtLang,
-                        max_length: 512
-                    });
-                    return result[0].translation_text;
-                } catch (error) {
-                    throw new Error(`翻译失败: ${error.message}`);
-                }
-            }
-            
-            getLanguageName(code) {
-                return LANGUAGE_MAP[code] || code;
-            }
+            throw new Error('翻译失败');
         }
-        
-        // 全局变量
-        const engine = new TranslationEngine();
-        let translationStartTime = 0;
-        let recognition = null;
+
+        // DOM 元素
+        const modeToggle = document.getElementById('modeToggle');
+        const modeIndicator = document.getElementById('modeIndicator');
+        const srcLang = document.getElementById('srcLang');
+        const tgtLang = document.getElementById('tgtLang');
+        const swapBtn = document.getElementById('swapBtn');
+        const inputText = document.getElementById('inputText');
+        const micBtn = document.getElementById('micBtn');
+        const speakInputBtn = document.getElementById('speakInputBtn');
+        const clearBtn = document.getElementById('clearBtn');
+        const translateBtn = document.getElementById('translateBtn');
+        const resultText = document.getElementById('resultText');
+        const copyBtn = document.getElementById('copyBtn');
+        const readBtn = document.getElementById('readBtn');
+        const statusDot = document.getElementById('statusDot');
+        const modelStatus = document.getElementById('modelStatus');
+        const progressFill = document.getElementById('progressFill');
+        const downloadModelBtn = document.getElementById('downloadModelBtn');
+        const loadModelBtn = document.getElementById('loadModelBtn');
+        const modelFile = document.getElementById('modelFile');
+        const toast = document.getElementById('toast');
+
+        // 状态变量
+        let isOnline = true;
         let isRecording = false;
-        let currentUtterance = null;
-        
-        // 语音输入初始化
-        function initSpeechRecognition() {
-            if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
-                const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-                recognition = new SpeechRecognition();
-                recognition.continuous = true;
-                recognition.interimResults = true;
-                recognition.lang = 'zh-CN';
-                
-                recognition.onresult = (event) => {
-                    let finalTranscript = '';
-                    let interimTranscript = '';
-                    
-                    for (let i = event.resultIndex; i < event.results.length; i++) {
-                        const transcript = event.results[i][0].transcript;
-                        if (event.results[i].isFinal) {
-                            finalTranscript += transcript;
-                        } else {
-                            interimTranscript += transcript;
-                        }
+        let recognition = null;
+        let translator = null;
+        let modelLoaded = false;
+        let currentTargetLang = tgtLang.value;
+
+        // Toast 提示
+        function showToast(message) {
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 2500);
+        }
+
+        // 模式切换
+        modeToggle.addEventListener('change', () => {
+            isOnline = modeToggle.checked;
+            modeIndicator.textContent = isOnline ? '在线模式' : '离线模式';
+            modeIndicator.className = `mode-indicator ${isOnline ? 'online' : 'offline'}`;
+            showToast(isOnline ? '已切换到在线翻译模式' : '已切换到离线翻译模式');
+        });
+
+        // 语言交换
+        swapBtn.addEventListener('click', () => {
+            const srcVal = srcLang.value;
+            const tgtVal = tgtLang.value;
+            srcLang.value = tgtVal;
+            tgtLang.value = srcVal;
+            if (inputText.value && resultText.textContent !== '翻译结果将显示在这里') {
+                inputText.value = resultText.textContent;
+                resultText.textContent = '翻译结果将显示在这里';
+            }
+            showToast('已交换源语言和目标语言');
+        });
+
+        // 翻译功能
+        async function translate() {
+            const text = inputText.value.trim();
+            if (!text) {
+                showToast('请输入要翻译的文字');
+                return;
+            }
+
+            translateBtn.disabled = true;
+            translateBtn.textContent = '翻译中...';
+            resultText.textContent = '正在翻译...';
+
+            try {
+                let result;
+                if (isOnline) {
+                    result = await googleTranslate(text, srcLang.value, tgtLang.value);
+                } else {
+                    if (!modelLoaded || !translator) {
+                        throw new Error('请先加载离线模型');
                     }
-                    
-                    const textarea = document.getElementById('sourceText');
-                    if (finalTranscript) {
-                        textarea.value += finalTranscript;
-                    }
-                    // 实时显示
-                    textarea.value = textarea.value.replace(/[^\n]*$/, '') + interimTranscript;
-                };
-                
-                recognition.onerror = (event) => {
-                    console.error('语音识别错误:', event.error);
-                    stopRecording();
-                    if (event.error !== 'no-speech') {
-                        showNotification('语音识别出错: ' + event.error, 'error');
-                    }
-                };
-                
-                recognition.onend = () => {
-                    if (isRecording) {
-                        recognition.start();
-                    }
-                };
+                    currentTargetLang = nllbLangMap[tgtLang.value];
+                    result = await translator.translate(text, currentTargetLang);
+                }
+                resultText.textContent = result;
+                showToast('翻译成功！');
+            } catch (error) {
+                resultText.textContent = '翻译失败: ' + error.message;
+                showToast('翻译失败');
+            } finally {
+                translateBtn.disabled = false;
+                translateBtn.textContent = '翻译';
             }
         }
-        
+
+        translateBtn.addEventListener('click', translate);
+        inputText.addEventListener('keydown', (e) => {
+            if (e.ctrlKey && e.key === 'Enter') translate();
+        });
+
+        // 语音输入 (Web Speech API)
+        function initSpeechRecognition() {
+            if ('webkitSpeechRecognition' in window) {
+                recognition = new webkitSpeechRecognition();
+            } else if ('SpeechRecognition' in window) {
+                recognition = new SpeechRecognition();
+            } else {
+                return null;
+            }
+            recognition.continuous = true;
+            recognition.interimResults = true;
+            recognition.lang = getSpeechLang(srcLang.value);
+
+            recognition.onresult = (event) => {
+                let finalTranscript = '';
+                for (let i = event.resultIndex; i < event.results.length; i++) {
+                    const transcript = event.results[i][0].transcript;
+                    if (event.results[i].isFinal) {
+                        finalTranscript += transcript;
+                    }
+                }
+                if (finalTranscript) {
+                    inputText.value += finalTranscript;
+                }
+            };
+
+            recognition.onerror = (event) => {
+                if (event.error !== 'no-speech') {
+                    console.error('语音识别错误:', event.error);
+                }
+                stopRecording();
+            };
+
+            recognition.onend = () => {
+                if (isRecording) {
+                    recognition.start();
+                }
+            };
+
+            return recognition;
+        }
+
+        function getSpeechLang(lang) {
+            const map = {
+                'zho_Hans': 'zh-CN',
+                'zho_Hant': 'zh-TW',
+                'eng_Latn': 'en-US',
+                'tha_Thai': 'th-TH',
+                'lao_Laoo': 'lo-LA',
+                'vie_Latn': 'vi-VN'
+            };
+            return map[lang] || 'zh-CN';
+        }
+
         function startRecording() {
             if (!recognition) {
-                showNotification('您的浏览器不支持语音输入', 'error');
-                return;
+                initSpeechRecognition();
             }
-            
-            isRecording = true;
-            recognition.lang = 'zh-CN';
-            recognition.start();
-            document.getElementById('voiceInputBtn').classList.add('recording');
-            document.getElementById('voiceInputBtnFloat').classList.add('recording');
-            showNotification('正在录音... 说完后点击停止', 'success');
+            if (recognition) {
+                recognition.lang = getSpeechLang(srcLang.value);
+                recognition.start();
+                isRecording = true;
+                micBtn.classList.add('recording');
+                showToast('开始语音输入...');
+            } else {
+                showToast('您的浏览器不支持语音输入');
+            }
         }
-        
+
         function stopRecording() {
             if (recognition) {
-                isRecording = false;
                 recognition.stop();
+                isRecording = false;
+                micBtn.classList.remove('recording');
+                showToast('语音输入已停止');
             }
-            document.getElementById('voiceInputBtn').classList.remove('recording');
-            document.getElementById('voiceInputBtnFloat').classList.remove('recording');
         }
-        
-        // 语音输出（TTS）
+
+        micBtn.addEventListener('click', () => {
+            if (isRecording) {
+                stopRecording();
+            } else {
+                startRecording();
+            }
+        });
+
+        srcLang.addEventListener('change', () => {
+            if (recognition) {
+                recognition.lang = getSpeechLang(srcLang.value);
+            }
+        });
+
+        // 语音输出 (SpeechSynthesis)
         function speakText(text, lang) {
             if (!('speechSynthesis' in window)) {
-                showNotification('您的浏览器不支持语音输出', 'error');
+                showToast('您的浏览器不支持语音朗读');
                 return;
             }
-            
-            // 停止之前的朗读
-            if (currentUtterance) {
-                speechSynthesis.cancel();
-            }
-            
+            window.speechSynthesis.cancel();
             const utterance = new SpeechSynthesisUtterance(text);
-            
-            // 根据目标语言设置语音
-            if (lang === 'lao_Laoo') {
-                utterance.lang = 'lo-LA';
-            } else if (lang.startsWith('zho')) {
-                utterance.lang = 'zh-CN';
-            } else if (lang === 'eng_Latn') {
-                utterance.lang = 'en-US';
-            } else {
-                utterance.lang = 'zh-CN';
-            }
-            
+            utterance.lang = getSpeechLang(lang);
             utterance.rate = 0.9;
             utterance.pitch = 1;
-            
-            utterance.onstart = () => {
-                document.getElementById('voiceOutputBtn').classList.add('recording');
-            };
-            
-            utterance.onend = () => {
-                document.getElementById('voiceOutputBtn').classList.remove('recording');
-            };
-            
-            utterance.onerror = () => {
-                document.getElementById('voiceOutputBtn').classList.remove('recording');
-            };
-            
-            currentUtterance = utterance;
-            speechSynthesis.speak(utterance);
+            window.speechSynthesis.speak(utterance);
+            showToast('正在朗读...');
         }
-        
-        function stopSpeaking() {
-            if ('speechSynthesis' in window) {
-                speechSynthesis.cancel();
+
+        speakInputBtn.addEventListener('click', () => {
+            const text = inputText.value.trim();
+            if (text) {
+                speakText(text, srcLang.value);
+            } else {
+                showToast('请先输入文字');
             }
-            document.getElementById('voiceOutputBtn').classList.remove('recording');
-        }
-        
-        // UI 函数
-        function showNotification(message, type = 'info') {
-            const notification = document.getElementById('notification');
-            notification.textContent = message;
-            notification.className = `notification ${type}`;
-            setTimeout(() => notification.className = 'notification hidden', 5000);
-        }
-        
-        function showModal(title, body, showClose = false) {
-            document.getElementById('modalTitle').textContent = title;
-            document.getElementById('modalText').textContent = body;
-            document.getElementById('modalCloseBtn').style.display = showClose ? 'inline-block' : 'none';
-            document.getElementById('progressFill').style.width = '0%';
-            document.getElementById('progressText').textContent = '初始化中...';
-            document.getElementById('progressBarContainer').style.display = 'block';
-            document.getElementById('modal').classList.remove('hidden');
-        }
-        
-        function showTranslationModal() {
-            const modal = document.getElementById('modal');
-            const modalTitle = document.getElementById('modalTitle');
-            const modalBody = document.getElementById('modalBody');
-            
-            modalTitle.textContent = '正在翻译';
-            modalBody.innerHTML = `
-                <div class="spinner-container">
-                    <div class="spinner"></div>
-                </div>
-                <div class="pulse" style="text-align: center; font-size: 14px; color: #666;">
-                    正在处理您的翻译，请稍候...
-                </div>
-            `;
-            document.getElementById('modalCloseBtn').style.display = 'none';
-            modal.classList.remove('hidden');
-        }
-        
-        function hideModal() {
-            document.getElementById('modal').classList.add('hidden');
-        }
-        
-        function updateProgress(percent, text) {
-            const progressFill = document.getElementById('progressFill');
-            const progressText = document.getElementById('progressText');
-            const cappedPercent = Math.min(100, Math.max(0, percent));
-            if (progressFill) progressFill.style.width = `${cappedPercent}%`;
-            if (progressText) progressText.textContent = text;
-        }
-        
-        function updateModalError(message) {
-            document.getElementById('modalText').innerHTML = `
-                <div style="color: #ff4d4f; margin-bottom: 12px;">${message}</div>
-                <div style="font-size: 12px;">请确保所有模型文件都在选定的文件夹中。</div>
-            `;
-            document.getElementById('modalCloseBtn').style.display = 'inline-block';
-            document.getElementById('progressBarContainer').style.display = 'none';
-        }
-        
-        function showStatus(message, type = 'info') {
-            const statusBar = document.getElementById('statusBar');
-            statusBar.textContent = message;
-            statusBar.className = `status ${type}`;
-        }
-        
-        function hideStatus() {
-            document.getElementById('statusBar').className = 'status hidden';
-        }
-        
-        function updateModelInfo(name, size, source, status) {
-            document.getElementById('modelName').textContent = name;
-            document.getElementById('modelSize').textContent = size;
-            document.getElementById('modelSource').textContent = source;
-            document.getElementById('modelStatus').textContent = status;
-            document.getElementById('modelInfo').style.display = 'block';
-        }
-        
-        function updateFileList(files) {
-            const fileListContent = document.getElementById('fileListContent');
-            fileListContent.innerHTML = files.map(f => `<div class="file-item">✓ ${f}</div>`).join('');
-            document.getElementById('fileList').style.display = 'block';
-        }
-        
-        function updateButtonStates() {
-            const hasText = document.getElementById('sourceText').value.trim().length > 0;
-            const sourceLang = document.getElementById('sourceLang').value;
-            const targetLang = document.getElementById('targetLang').value;
-            const hasLangs = sourceLang && targetLang;
-            const langsAreDifferent = sourceLang !== targetLang;
-            
-            const onlineMode = document.getElementById('onlineToggle').checked;
-            
-            // 在线模式不需要模型，离线模式需要
-            const canTranslate = hasText && hasLangs && langsAreDifferent && 
-                (onlineMode || (!onlineMode && engine.isInitialized));
-            
-            document.getElementById('translateBtn').disabled = !canTranslate;
-            document.getElementById('swapBtn').disabled = !hasLangs;
-        }
-        
-        function populateLanguageSelectors() {
-            const sourceLang = document.getElementById('sourceLang');
-            const targetLang = document.getElementById('targetLang');
-            
-            const sortedLanguages = Object.entries(LANGUAGE_MAP).sort((a, b) => a[1].localeCompare(b[1], 'zh'));
-            
-            sortedLanguages.forEach(([code, name]) => {
-                const sourceOpt = document.createElement('option');
-                sourceOpt.value = code;
-                sourceOpt.textContent = name;
-                if (code === 'zho_Hans') sourceOpt.selected = true;
-                sourceLang.appendChild(sourceOpt);
-                
-                const targetOpt = document.createElement('option');
-                targetOpt.value = code;
-                targetOpt.textContent = name;
-                if (code === 'lao_Laoo') targetOpt.selected = true;
-                targetLang.appendChild(targetOpt);
-            });
-        }
-        
-        // 事件监听器
-        document.getElementById('downloadModelBtn').addEventListener('click', () => {
-            engine.downloadModelFiles();
         });
-        
-        document.getElementById('loadModelBtn').addEventListener('click', () => {
-            engine.loadFromLocalFolder();
+
+        readBtn.addEventListener('click', () => {
+            const text = resultText.textContent;
+            if (text && text !== '翻译结果将显示在这里' && !text.startsWith('翻译失败') && !text.startsWith('正在翻译')) {
+                speakText(text, tgtLang.value);
+            } else {
+                showToast('没有可朗读的内容');
+            }
         });
-        
-        document.getElementById('translateBtn').addEventListener('click', async () => {
-            const sourceText = document.getElementById('sourceText').value.trim();
-            const sourceLang = document.getElementById('sourceLang').value;
-            const targetLang = document.getElementById('targetLang').value;
-            
-            if (!sourceText || !sourceLang || !targetLang) {
-                showNotification('请填写所有字段', 'error');
-                return;
+
+        // 清空按钮
+        clearBtn.addEventListener('click', () => {
+            inputText.value = '';
+            inputText.focus();
+            showToast('已清空输入');
+        });
+
+        // 复制按钮
+        copyBtn.addEventListener('click', () => {
+            const text = resultText.textContent;
+            if (text && text !== '翻译结果将显示在这里') {
+                navigator.clipboard.writeText(text).then(() => {
+                    showToast('已复制到剪贴板');
+                });
+            } else {
+                showToast('没有可复制的内容');
             }
-            if (sourceLang === targetLang) {
-                showNotification('源语言和目标语言不能相同', 'error');
-                return;
-            }
-            
+        });
+
+        // 离线模型加载
+        async function loadTranslator() {
             try {
-                document.getElementById('translateBtn').disabled = true;
-                const sourceName = engine.getLanguageName(sourceLang);
-                const targetName = engine.getLanguageName(targetLang);
+                // 尝试加载Xenova/transformers
+                const { pipeline, env } = await import('https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.1');
                 
-                translationStartTime = performance.now();
-                const result = await engine.translate(sourceText, sourceLang, targetLang);
-                const elapsed = Math.round(performance.now() - translationStartTime);
-                hideModal();
-                
-                document.getElementById('output').textContent = result;
-                document.getElementById('translationInfo').textContent = 
-                    `${sourceName} → ${targetName} | ${(elapsed / 1000).toFixed(2)}秒`;
-                
-                showNotification('翻译完成！', 'success');
+                statusDot.className = 'status-dot loading';
+                modelStatus.textContent = '正在加载模型...';
+                progressFill.style.width = '10%';
+
+                translator = await pipeline('translation', 'Xenova/nllb-200-distilled-600M', {
+                    progress_callback: (progress) => {
+                        if (progress.status === 'progress') {
+                            const percent = Math.round(progress.progress);
+                            progressFill.style.width = `${percent}%`;
+                            modelStatus.textContent = `加载中: ${percent}%`;
+                        }
+                    }
+                });
+
+                modelLoaded = true;
+                statusDot.className = 'status-dot loaded';
+                modelStatus.textContent = '模型已加载';
+                progressFill.style.width = '100%';
+                loadModelBtn.disabled = false;
+                downloadModelBtn.disabled = true;
+                showToast('离线模型加载成功！');
             } catch (error) {
-                console.error('翻译错误:', error);
-                hideModal();
-                showStatus(`错误: ${error.message}`, 'error');
-                showNotification(`错误: ${error.message}`, 'error');
-            } finally {
-                updateButtonStates();
+                console.error('模型加载失败:', error);
+                statusDot.className = 'status-dot';
+                modelStatus.textContent = '模型加载失败';
+                showToast('模型加载失败: ' + error.message);
             }
+        }
+
+        // 下载模型
+        downloadModelBtn.addEventListener('click', () => {
+            showToast('正在初始化模型，请稍候...');
+            loadTranslator();
         });
-        
-        document.getElementById('clearBtn').addEventListener('click', () => {
-            document.getElementById('sourceText').value = '';
-            document.getElementById('output').textContent = '翻译结果将显示在这里...';
-            document.getElementById('translationInfo').textContent = '';
-            hideStatus();
-            updateButtonStates();
-            stopSpeaking();
+
+        // 加载本地模型
+        loadModelBtn.addEventListener('click', () => {
+            modelFile.click();
         });
-        
-        document.getElementById('swapBtn').addEventListener('click', () => {
-            const sourceLang = document.getElementById('sourceLang').value;
-            const targetLang = document.getElementById('targetLang').value;
-            
-            if (!sourceLang || !targetLang) {
-                showNotification('请先选择两种语言', 'error');
-                return;
-            }
-            
-            document.getElementById('sourceLang').value = targetLang;
-            document.getElementById('targetLang').value = sourceLang;
-            
-            const sourceText = document.getElementById('sourceText').value;
-            const outputText = document.getElementById('output').textContent;
-            
-            if (outputText && outputText !== '翻译结果将显示在这里...') {
-                document.getElementById('sourceText').value = outputText;
-                document.getElementById('output').textContent = sourceText;
-            }
-            
-            showNotification('语言已交换', 'success');
-            updateButtonStates();
-        });
-        
-        // 在线/离线切换
-        document.getElementById('onlineToggle').addEventListener('change', (e) => {
-            const isOnline = e.target.checked;
-            engine.setOnlineMode(isOnline);
-            
-            const dot = document.getElementById('onlineDot');
-            const status = document.getElementById('modeStatus');
-            
-            if (isOnline) {
-                dot.className = 'online-dot active';
-                status.textContent = '在线模式';
-            } else {
-                dot.className = 'online-dot inactive';
-                status.textContent = '离线模式';
-            }
-            
-            updateButtonStates();
-        });
-        
-        // 语音输入按钮
-        document.getElementById('voiceInputBtn').addEventListener('click', () => {
-            if (isRecording) {
-                stopRecording();
-            } else {
-                startRecording();
-            }
-        });
-        
-        document.getElementById('voiceInputBtnFloat').addEventListener('click', () => {
-            if (isRecording) {
-                stopRecording();
-            } else {
-                startRecording();
-            }
-        });
-        
-        // 语音输出按钮
-        document.getElementById('voiceOutputBtn').addEventListener('click', () => {
-            const outputText = document.getElementById('output').textContent;
-            if (outputText && outputText !== '翻译结果将显示在这里...') {
-                const targetLang = document.getElementById('targetLang').value;
-                if (isRecording) {
-                    stopSpeaking();
-                } else {
-                    speakText(outputText, targetLang);
-                }
-            } else {
-                showNotification('没有可朗读的内容', 'error');
-            }
-        });
-        
-        document.getElementById('modalCloseBtn').addEventListener('click', hideModal);
-        document.getElementById('sourceText').addEventListener('input', updateButtonStates);
-        document.getElementById('sourceLang').addEventListener('change', updateButtonStates);
-        document.getElementById('targetLang').addEventListener('change', updateButtonStates);
-        
-        // 键盘快捷键
-        document.addEventListener('keydown', (e) => {
-            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
-                e.preventDefault();
-                if (!document.getElementById('translateBtn').disabled) {
-                    document.getElementById('translateBtn').click();
+
+        modelFile.addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                showToast('正在加载本地模型...');
+                try {
+                    const arrayBuffer = await file.arrayBuffer();
+                    const { pipeline, env } = await import('https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.1');
+                    
+                    env.allowLocalModels = true;
+                    env.useBrowserCache = true;
+                    
+                    statusDot.className = 'status-dot loading';
+                    modelStatus.textContent = '正在加载本地模型...';
+
+                    translator = await pipeline('translation', 'Xenova/nllb-200-distilled-600M', {
+                        progress_callback: (progress) => {
+                            if (progress.status === 'progress') {
+                                const percent = Math.round(progress.progress);
+                                progressFill.style.width = `${percent}%`;
+                                modelStatus.textContent = `加载中: ${percent}%`;
+                            }
+                        }
+                    });
+
+                    modelLoaded = true;
+                    statusDot.className = 'status-dot loaded';
+                    modelStatus.textContent = '本地模型已加载';
+                    progressFill.style.width = '100%';
+                    showToast('本地模型加载成功！');
+                } catch (error) {
+                    console.error('本地模型加载失败:', error);
+                    statusDot.className = 'status-dot';
+                    modelStatus.textContent = '模型加载失败';
+                    showToast('本地模型加载失败');
                 }
             }
         });
-        
-        // 初始化
-        window.addEventListener('DOMContentLoaded', () => {
-            populateLanguageSelectors();
-            initSpeechRecognition();
-            showNotification('老挝语翻译助手已就绪！默认：中译老挝语', 'success');
-            updateButtonStates();
+
+        // 页面加载完成
+        document.addEventListener('DOMContentLoaded', () => {
+            showToast('翻译器已就绪');
         });
     </script>
 </body>

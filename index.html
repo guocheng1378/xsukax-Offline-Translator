@@ -511,7 +511,7 @@
             </div>
 
             <div class="model-section">
-                <h3>🤖 离线翻译模型 (NLLB-200 Distilled)</h3>
+                <h3>🤖 离线翻译模型（可选）</h3>
                 <div class="model-status">
                     <span class="status-dot" id="statusDot"></span>
                     <span id="modelStatus">模型未加载</span>
@@ -519,10 +519,26 @@
                 <div class="progress-bar">
                     <div class="progress-fill" id="progressFill"></div>
                 </div>
+                <div class="model-guide" style="font-size:0.82em;color:#555;margin-bottom:10px;line-height:1.7;background:#f9f9f9;padding:10px;border-radius:8px;">
+                    <p><strong>💡 推荐：先配置百度API（右上角⚙️），在线翻译完全够用！</strong></p>
+                    <details style="margin-top:6px;">
+                        <summary style="cursor:pointer;color:#1aad19;font-weight:600;">💾 想用离线模型？看教程</summary>
+                        <div style="padding:8px 0 4px 0;line-height:1.8;">
+                            <b>电脑下载步骤：</b><br>
+                            ① 电脑开VPN，访问<br>
+                            &nbsp;<a href="https://huggingface.co/Xenova/nllb-200-distilled-600M" target="_blank" style="color:#1aad19;word-break:break-all;">huggingface.co/Xenova/nllb-200-distilled-600M</a><br>
+                            &nbsp;下载 <code style="background:#eee;padding:1px 5px;border-radius:3px;">onnx/model.onnx</code>（约830MB）<br>
+                            ② 传到手机（数据线/微信文件传输）<br>
+                            ③ 点下方「📂 加载本地模型」选择文件<br><br>
+                            <b>手机直接下（需VPN开启）：</b><br>
+                            &nbsp;点「📥 尝试下载」，等待5分钟
+                        </div>
+                    </details>
+                </div>
                 <div class="model-actions">
-                    <button class="model-btn" id="downloadModelBtn">📥 下载模型</button>
+                    <button class="model-btn" id="downloadModelBtn">📥 尝试下载（需VPN）</button>
                     <button class="model-btn" id="loadModelBtn" disabled>📂 加载本地模型</button>
-                    <input type="file" id="modelFile" accept=".bin" style="display:none">
+                    <input type="file" id="modelFile" accept=".onnx,.bin,.q4" style="display:none">
                 </div>
             </div>
         </div>
@@ -1103,7 +1119,7 @@
 
         // 下载模型
         downloadModelBtn.addEventListener('click', () => {
-            showToast('正在初始化模型，请稍候...');
+            showToast('尝试下载中，请确保VPN已开启（耐心等待）...');
             loadTranslator();
         });
 
@@ -1152,7 +1168,7 @@
 
         // 页面加载完成
         document.addEventListener('DOMContentLoaded', () => {
-            showToast('翻译器已就绪');
+            showToast('翻译器已就绪！点右上角⚙️配置百度API');
         });
     </script>
 </body>
